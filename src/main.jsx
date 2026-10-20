@@ -7,6 +7,16 @@ const REMOTE_DATA = 'https://raw.githubusercontent.com/mcaupybugs/leetcode-probl
 const CURATED_URL = '/data/curated-problems.json'
 const LOCAL_URL = '/data/problems.json'
 const JUDGE0_URL = 'https://ce.judge0.com'
+const DEVELOPER = {
+  name: 'A M i T',
+  username: 'amitpatle',
+  bio: 'There is always one more bug to fix',
+  avatar: 'https://avatars.githubusercontent.com/u/92509904?v=4',
+  profileUrl: 'https://github.com/amitpatle',
+  repositoryUrl: 'https://github.com/amitpatle/LEETUNLOCK',
+  publicRepos: 39,
+  followers: 29
+}
 const LANGUAGES = {
   python: { label: 'Python', id: 71, starter: '# Write your solution here\nprint("Hello, LeetUnlock!")' },
   javascript: { label: 'JavaScript', id: 63, starter: '// Write your solution here\nconsole.log("Hello, LeetUnlock!")' },
@@ -304,14 +314,15 @@ function App() {
       {page === 'developer' && <section id="developer" className="developer-section">
         <div className="section-heading"><div><div className="eyebrow">THE BUILDER</div><h2>Developer</h2></div></div>
         <div className="developer-card">
-          <div className="developer-avatar" aria-hidden="true">&gt;_</div>
+          <img className="developer-avatar" src={DEVELOPER.avatar} alt={`${DEVELOPER.name} GitHub avatar`} />
           <div className="developer-copy">
             <span className="developer-role">OPEN SOURCE DEV</span>
-            <h3>Amit Patle</h3>
-            <p>Building open-source tools that make coding practice more focused, practical, and accessible.</p>
+            <h3>{DEVELOPER.name}</h3>
+            <p>{DEVELOPER.bio}</p>
+            <div className="developer-stats"><span><strong>{DEVELOPER.publicRepos}</strong> public repos</span><span><strong>{DEVELOPER.followers}</strong> followers</span><span>@{DEVELOPER.username}</span></div>
             <div className="developer-links">
-              <a className="primary-button" href="https://github.com/amitpatle" target="_blank" rel="noreferrer">GitHub profile <ExternalLink size={14}/></a>
-              <a className="secondary-button" href="https://github.com/amitpatle/LEETUNLOCK" target="_blank" rel="noreferrer">LEETUNLOCK repository <ExternalLink size={14}/></a>
+              <a className="primary-button" href={DEVELOPER.profileUrl} target="_blank" rel="noreferrer">GitHub profile <ExternalLink size={14}/></a>
+              <a className="secondary-button" href={DEVELOPER.repositoryUrl} target="_blank" rel="noreferrer">LEETUNLOCK repository <ExternalLink size={14}/></a>
             </div>
           </div>
         </div>
@@ -336,7 +347,7 @@ function App() {
     </section></div>}
     <footer className="site-footer">
       <div className="footer-brand"><span>&gt;_ LEETUNLOCK</span><small>Built for learning, not shortcuts.</small></div>
-      <div className="footer-about"><strong>About me</strong><span>Built by Amit Patle — developer and coding educator.</span><a href="https://github.com/amitpatle" target="_blank" rel="noreferrer">GitHub profile <ExternalLink size={12}/></a></div>
+      <div className="footer-about"><strong>About me</strong><span>{DEVELOPER.name} — {DEVELOPER.bio}.</span><a href={DEVELOPER.profileUrl} target="_blank" rel="noreferrer">GitHub profile <ExternalLink size={12}/></a></div>
       <div className="footer-open-source"><strong>Open source</strong><span>Improve the workspace, share ideas, and help make interview prep more accessible.</span><a href="https://github.com/amitpatle/LEETUNLOCK" target="_blank" rel="noreferrer">View repository <ExternalLink size={12}/></a></div>
       <small>Problem content belongs to its respective owners.</small>
     </footer>

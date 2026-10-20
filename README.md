@@ -73,6 +73,10 @@ scripts/build-curated.mjs    Generate records for all catalog problems
 
 The Practice section and problem details include a code editor for Python, JavaScript, C++, and Java. Code is sent to the public Judge0 CE endpoint for execution, so network access is required and public-service rate limits may apply. Do not run secrets or private sensitive code.
 
+## Developer
+
+LeetUnlock is maintained by [A M i T](https://github.com/amitpatle), an open-source developer on GitHub. Their public profile bio is: “There is always one more bug to fix.” The profile currently lists 39 public repositories and 29 followers. Visit the [GitHub profile](https://github.com/amitpatle) or the [LEETUNLOCK repository](https://github.com/amitpatle/LEETUNLOCK).
+
 ## Data note
 
 LeetCode content and problem statements belong to their respective rights holders. The project links back to LeetCode and uses a public community dataset as an optional data source. Review that dataset's license and LeetCode's terms before redistributing fetched statements or editorial content.
