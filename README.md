@@ -39,7 +39,7 @@ The import script validates the response and writes the snapshot only when a rec
 
 ## Catalog data
 
-- `public/data/curated-problems.json` contains a curated learning record for every bundled catalog problem. Existing enriched records are preserved, and generated records reuse the source statement, metadata, examples, hints, constraints, and code.
+- `public/data/curated-problems.json` contains the 80 enriched learning records. All other catalog problems use the bundled catalog statement, metadata, examples, hints, constraints, and code without duplicating that large data in the curated file.
 - On startup, the app first checks `public/data/problems.json`, then attempts to load the public dataset at:
   `https://raw.githubusercontent.com/mcaupybugs/leetcode-problems-db/master/merged_problems.json`
 - The bundled snapshot currently contains 2,913 records. The remote count may change when the catalog is refreshed.

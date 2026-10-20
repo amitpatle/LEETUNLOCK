@@ -1,0 +1,172 @@
+LEETUNLOCK DEPLOYMENT GUIDE
+===========================
+
+This guide explains how to run LeetUnlock locally, test the email request
+form, and deploy the application with its server-side mail API.
+
+
+1. REQUIREMENTS
+---------------
+
+- Node.js 18 or newer
+- npm
+- A Resend account and API key for sending request emails
+- A sender email address or domain verified in Resend
+
+
+2. INSTALL THE PROJECT
+----------------------
+
+Open PowerShell in the project folder:
+
+    cd C:\Users\email\OneDrive\Documents\GitHub\LEETUNLOCK
+
+Install dependencies:
+
+    npm install
+
+
+3. CREATE LOCAL ENVIRONMENT VARIABLES
+-------------------------------------
+
+Create a file named ".env.local" in the project root:
+
+    RESEND_API_KEY=re_your_resend_api_key
+    MAIL_FROM=your-verified-sender@example.com
+
+Replace the placeholder values with your real Resend API key and verified
+sender address.
+
+IMPORTANT:
+- Never commit ".env.local".
+- Never put RESEND_API_KEY in React code or public files.
+- MAIL_FROM must be verified in Resend.
+- The destination address is amitpxtle@gmail.com.
+
+
+4. RUN LOCALLY WITH THE API
+---------------------------
+
+The email API is implemented in:
+
+    api\send-email.js
+
+Run the Vercel development server:
+
+    npx vercel dev
+
+Open the URL shown by Vercel, usually:
+
+    http://localhost:3000/#request
+
+Open the Request tab, enter a message, and click "Send message".
+
+The request should be sent to:
+
+    amitpxtle@gmail.com
+
+If Vercel CLI is not installed, it will ask to install it. You can also
+install it globally:
+
+    npm install --global vercel
+
+Then run:
+
+    vercel login
+    vercel dev
+
+
+5. RUN THE FRONTEND ONLY
+------------------------
+
+To run only the Vite frontend:
+
+    npm run dev
+
+This is useful for UI development, but the "/api/send-email" route will not
+work unless a backend or Vercel development server is also available.
+
+
+6. BUILD AND PREVIEW
+--------------------
+
+Create a production build:
+
+    npm run build
+
+Preview the static build:
+
+    npm run preview
+
+The static Vite preview does not provide the server-side email API. Use
+"npx vercel dev" when testing email delivery locally.
+
+
+7. DEPLOY TO VERCEL
+-------------------
+
+Option A: Deploy from the command line:
+
+    vercel
+
+Follow the prompts and select the project directory.
+
+Add the production environment variables:
+
+    vercel env add RESEND_API_KEY production
+    vercel env add MAIL_FROM production
+
+Deploy to production:
+
+    vercel --prod
+
+Option B: Deploy through the Vercel dashboard:
+
+1. Import the GitHub repository.
+2. Keep the Vite build settings detected by Vercel.
+3. Open Project Settings > Environment Variables.
+4. Add RESEND_API_KEY.
+5. Add MAIL_FROM with a verified Resend sender.
+6. Redeploy the project.
+
+
+8. VERIFY THE DEPLOYMENT
+------------------------
+
+Open the deployed site:
+
+    https://your-project.vercel.app/#request
+
+Submit a test request and confirm delivery to:
+
+    amitpxtle@gmail.com
+
+If sending fails, check:
+
+- RESEND_API_KEY is set in the correct Vercel environment.
+- MAIL_FROM is verified in Resend.
+- The deployment was redeployed after adding variables.
+- The browser Network tab shows a successful POST to "/api/send-email".
+- Vercel function logs contain no provider errors.
+
+
+9. SECURITY NOTES
+-----------------
+
+- Do not commit API keys, passwords, or ".env.local".
+- Do not expose RESEND_API_KEY with a "VITE_" prefix.
+- Keep email sending on the server-side API route.
+- Do not send secrets or private data through the public request form.
+- Consider adding rate limiting or CAPTCHA before exposing the form publicly.
+
+
+10. USEFUL COMMANDS
+-------------------
+
+    npm install
+    npm run dev
+    npm run build
+    npm run preview
+    npx vercel dev
+    vercel --prod
+

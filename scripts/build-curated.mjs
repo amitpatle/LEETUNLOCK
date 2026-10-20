@@ -7,31 +7,12 @@ const catalogRaw = JSON.parse(await readFile(catalogPath, 'utf8'))
 const catalog = Array.isArray(catalogRaw) ? catalogRaw : catalogRaw.problems || []
 const existingRaw = JSON.parse(await readFile(curatedPath, 'utf8'))
 const existing = Array.isArray(existingRaw) ? existingRaw : existingRaw.problems || []
-const byId = new Map(existing.map(problem => [String(problem.id), problem]))
-
-for (const problem of catalog) {
-  const id = String(problem.id)
-  if (byId.has(id)) continue
-  byId.set(id, {
-    id,
-    title: problem.title || `Problem ${id}`,
-    slug: problem.slug || '',
-    difficulty: problem.difficulty || 'Unknown',
-    tags: problem.topics || [],
-    summary: problem.description || 'Review the problem statement and practice an implementation in the editor.',
-    examples: problem.examples || [],
-    constraints: problem.constraints || [],
-    hints: problem.hints || [],
-    solutions: problem.code_snippets || {},
-    externalUrl: problem.url
-  })
-}
-
-const problems = [...byId.values()]
+const catalogIds = new Set(catalog.map(problem => String(problem.id)))
+const problems = existing.filter(problem => catalogIds.has(String(problem.id)))
 await writeFile(curatedPath, JSON.stringify({
-  source: 'Generated from the bundled catalog; existing enriched records are preserved.',
+  source: 'Enriched records; remaining catalog problems use bundled metadata without duplicate copies.',
   generatedAt: new Date().toISOString(),
   count: problems.length,
   problems
 }, null, 2) + '\n')
-console.log(`Saved ${problems.length} curated learning records.`)
+console.log(`Saved ${problems.length} enriched records; ${catalog.length} catalog records remain available through the main catalog.`)

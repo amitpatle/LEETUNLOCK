@@ -115,14 +115,16 @@ function normalize(p, i = 0) {
   const topics = normalizeTopics(p.topics ?? p.topicTags ?? p.tags)
   const id = String(p.frontend_id ?? p.frontendQuestionId ?? p.problem_id ?? p.id ?? i + 1)
   return {
-    ...p, id, title: String(p.title ?? p.title_name ?? `Problem ${id}`),
+    id, title: String(p.title ?? p.title_name ?? `Problem ${id}`),
     slug, difficulty: String(p.difficulty ?? 'Unknown'),
     topics,
     description: typeof (p.description ?? p.content) === 'string' ? (p.description ?? p.content) : '',
     examples: p.examples ?? [], constraints: p.constraints ?? [],
     hints: p.hints ?? [], snippets: p.snippets ?? p.code_snippets ?? p.codeSnippets ?? {},
     premium: Boolean(p.paidOnly ?? p.isPaidOnly),
-    url: p.url ?? (slug ? `https://leetcode.com/problems/${slug}/` : 'https://leetcode.com/problemset/')
+    url: p.url ?? p.externalUrl ?? (slug ? `https://leetcode.com/problems/${slug}/` : 'https://leetcode.com/problemset/'),
+    ...(p.summary ? { summary: String(p.summary) } : {}),
+    ...(p.solutions ? { solutions: p.solutions } : {})
   }
 }
 function curatedNormalize(p) {
@@ -226,18 +228,27 @@ function App() {
     window.addEventListener('hashchange', handleHashChange)
     return () => window.removeEventListener('hashchange', handleHashChange)
   }, [])
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [page])
+  useEffect(() => {
+    if (!selected) return undefined
+    const handleKeyDown = event => event.key === 'Escape' && setSelected(null)
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selected])
 
   async function loadCatalog() {
     setLoading(true); setError('')
     let curatedRecords = []
     try {
-      const curatedRes = await fetch(CURATED_URL)
+      const [curatedRes, localRes] = await Promise.all([fetch(CURATED_URL), fetch(LOCAL_URL)])
       if (curatedRes.ok) {
         const c = await curatedRes.json()
         curatedRecords = (c.problems || []).map(curatedNormalize)
         setCurated(curatedRecords)
       }
-      let response = await fetch(LOCAL_URL)
+      let response = localRes
       if (response.ok) {
         const text = await response.text()
         if (!text.trimStart().startsWith('<')) {
@@ -274,6 +285,8 @@ function App() {
   }, [problems, curated, curatedById])
 
   const topics = useMemo(() => [...new Set(all.flatMap(p => p.topics || []).filter(Boolean))].sort((a,b) => a.localeCompare(b)), [all])
+  const solvedSet = useMemo(() => new Set(solved), [solved])
+  const bookmarkSet = useMemo(() => new Set(bookmarks), [bookmarks])
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase()
     return all.filter(p => {
@@ -281,10 +294,10 @@ function App() {
       return (!q || text.includes(q)) &&
         (difficulty === 'All' || p.difficulty.toLowerCase() === difficulty.toLowerCase()) &&
         (topic === 'All' || p.topics.some(t => t.toLowerCase() === topic.toLowerCase())) &&
-        (status === 'All' || (status === 'Solved' ? solved.includes(String(p.id)) : status === 'Bookmarked' ? bookmarks.includes(String(p.id)) : !solved.includes(String(p.id)))) &&
+        (status === 'All' || (status === 'Solved' ? solvedSet.has(String(p.id)) : status === 'Bookmarked' ? bookmarkSet.has(String(p.id)) : !solvedSet.has(String(p.id)))) &&
         (premium === 'All' || (premium === 'Free' ? !p.premium : p.premium))
     })
-  }, [all, query, difficulty, topic, status, premium, solved, bookmarks])
+  }, [all, query, difficulty, topic, status, premium, solvedSet, bookmarkSet])
   const pageSize = 10
   const pageCount = Math.max(1, Math.ceil(visible.length / pageSize))
   const paginated = useMemo(() => visible.slice((catalogPage - 1) * pageSize, catalogPage * pageSize), [visible, catalogPage])
@@ -326,7 +339,7 @@ function App() {
     </header>
     <main>
       {page === 'home' && <section className="hero">
-        <div className="hero-copy"><div className="eyebrow"><Sparkles size={13}/> YOUR INTERVIEW PREP WORKSPACE</div><h1>Unlock your next<br/><span>breakthrough.</span></h1><p>A focused command center for coding practice. Search by concept, filter by difficulty, and turn every problem into progress.</p><div className="hero-meta"><span><Database size={14}/>{loading ? 'Loading catalog…' : `${stats.total.toLocaleString()} problems indexed`}</span><span className="dot-sep">·</span><span>{curated.length} curated learning records</span></div></div>
+        <div className="hero-copy"><div className="eyebrow"><Sparkles size={13}/> YOUR INTERVIEW PREP WORKSPACE</div><h1>Unlock your next<br/><span>breakthrough.</span></h1><p>A focused command center for coding practice. Search by concept, filter by difficulty, and turn every problem into progress.</p><div className="hero-meta"><span><Database size={13}/>{loading ? 'Loading catalog…' : `${stats.total.toLocaleString()} problems indexed`}</span><span className="dot-sep">·</span><span>{loading ? 'Preparing learning records…' : `${stats.total.toLocaleString()} learning records`}</span></div></div>
         <div className="hero-art" aria-hidden="true"><img src="/leetunlock-preview.svg" alt="" /></div>
       </section>}
       {page === 'dashboard' && <div className="dashboard-heading"><div className="eyebrow">EDU WORKSPACE</div><h1>Practice with purpose.</h1><p>Track progress, run code, and learn from every problem in one place.</p></div>}
