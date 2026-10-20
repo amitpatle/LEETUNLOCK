@@ -6,6 +6,13 @@ import './style.css'
 const REMOTE_DATA = 'https://raw.githubusercontent.com/mcaupybugs/leetcode-problems-db/master/merged_problems.json'
 const CURATED_URL = '/data/curated-problems.json'
 const LOCAL_URL = '/data/problems.json'
+const JUDGE0_URL = 'https://ce.judge0.com'
+const LANGUAGES = {
+  python: { label: 'Python', id: 71, starter: '# Write your solution here\nprint("Hello, LeetUnlock!")' },
+  javascript: { label: 'JavaScript', id: 63, starter: '// Write your solution here\nconsole.log("Hello, LeetUnlock!")' },
+  cpp: { label: 'C++', id: 54, starter: '#include <iostream>\nusing namespace std;\n\nint main() {\n  cout << "Hello, LeetUnlock!" << endl;\n  return 0;\n}' },
+  java: { label: 'Java', id: 62, starter: 'public class Main {\n  public static void main(String[] args) {\n    System.out.println("Hello, LeetUnlock!");\n  }\n}' }
+}
 
 function normalizeTopics(value) {
   if (Array.isArray(value)) return value.map(topic => typeof topic === 'string' ? topic : topic?.name).filter(Boolean).map(String)
@@ -69,6 +76,65 @@ function normalize(p, i = 0) {
 function curatedNormalize(p) {
   return normalize({ ...p, id: p.id ?? p.problem_id, topics: p.tags ?? p.topics ?? [], description: p.summary ?? p.description, snippets: p.solutions ?? p.code_snippets })
 }
+
+function getStarterCode(problem, language) {
+  const snippet = problem?.snippets?.[language] ?? problem?.snippets?.[LANGUAGES[language]?.label]
+  return typeof snippet === 'string' ? snippet : snippet?.code || LANGUAGES[language].starter
+}
+
+function formatExecutionResult(result) {
+  if (result.compile_output) return `Compile error:\n${result.compile_output}`
+  if (result.stderr) return `Error:\n${result.stderr}`
+  if (result.stdout) return result.stdout
+  return result.status?.description || 'The program finished without output.'
+}
+
+function CodeRunner({ problem = null }) {
+  const [language, setLanguage] = useState('python')
+  const [code, setCode] = useState(() => getStarterCode(problem, 'python'))
+  const [input, setInput] = useState('')
+  const [output, setOutput] = useState('')
+  const [running, setRunning] = useState(false)
+
+  const changeLanguage = value => {
+    setLanguage(value)
+    setCode(getStarterCode(problem, value))
+    setOutput('')
+  }
+
+  const runCode = async () => {
+    setRunning(true)
+    setOutput('Running code…')
+    try {
+      const response = await fetch(`${JUDGE0_URL}/submissions?base64_encoded=false&wait=true`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language_id: LANGUAGES[language].id, source_code: code, stdin: input })
+      })
+      if (!response.ok) throw new Error(`Compiler service returned HTTP ${response.status}.`)
+      const result = await response.json()
+      setOutput(formatExecutionResult(result))
+    } catch (error) {
+      setOutput(`Could not run code: ${error.message || 'the compiler service is unavailable.'}`)
+    } finally {
+      setRunning(false)
+    }
+  }
+
+  return <div className="code-runner">
+    <div className="runner-toolbar">
+      <select aria-label="Programming language" value={language} onChange={e => changeLanguage(e.target.value)}>
+        {Object.entries(LANGUAGES).map(([key, value]) => <option key={key} value={key}>{value.label}</option>)}
+      </select>
+      <button className="primary-button" onClick={runCode} disabled={running}>{running ? 'Running…' : 'Run code'} <Code2 size={14}/></button>
+    </div>
+    <textarea className="code-editor" aria-label="Code editor" value={code} onChange={e => setCode(e.target.value)} spellCheck="false" />
+    <label className="input-label">STANDARD INPUT<textarea className="runner-input" aria-label="Standard input" value={input} onChange={e => setInput(e.target.value)} placeholder="Optional input…" spellCheck="false" /></label>
+    <pre className="runner-output" aria-live="polite">{output || 'Output will appear here.'}</pre>
+    <small className="runner-note">Execution is provided by Judge0 CE. Do not run secrets or untrusted private code.</small>
+  </div>
+}
+
 function App() {
   const [problems, setProblems] = useState([])
   const [curated, setCurated] = useState([])
@@ -166,7 +232,7 @@ function App() {
   return <div className={dark ? 'app dark' : 'app light'}>
     <header className="topbar">
       <a className="brand" href="#"><span className="brand-mark">&gt;_</span><span>LEET<span className="brand-accent">UNLOCK</span><small>THE CODING WORKSPACE</small></span></a>
-      <nav><a className="nav-active" href="#catalog">Catalog</a><a href="#progress">Progress</a><a href="https://leetcode.com/problemset/" target="_blank" rel="noreferrer">LeetCode <ExternalLink size={13}/></a><a className="sponsor-link" href="https://github.com/sponsors/amitpatle" target="_blank" rel="noreferrer"><Heart size={13}/> Sponsor</a></nav>
+      <nav><a className="nav-active" href="#catalog">Catalog</a><a href="#practice">Practice</a><a href="#progress">Progress</a><a href="https://leetcode.com/problemset/" target="_blank" rel="noreferrer">LeetCode <ExternalLink size={13}/></a><a className="sponsor-link" href="https://github.com/sponsors/amitpatle" target="_blank" rel="noreferrer"><Heart size={13}/> Sponsor</a></nav>
       <div className="top-actions"><button className="icon-button" title="Export progress" onClick={exportProgress}><Download size={17}/></button><button className="icon-button" title="Toggle theme" onClick={() => setDark(!dark)}>{dark ? <Sun size={17}/> : <Moon size={17}/>}</button></div>
     </header>
     <main>
@@ -204,12 +270,19 @@ function App() {
         </div>}
         <div className="catalog-footer"><span>LEETUNLOCK / INDEX V1.0</span><span>Progress stored locally on this device</span></div>
       </section>
+      <section id="practice" className="practice-section">
+        <div className="section-heading"><div><div className="eyebrow">THE PLAYGROUND</div><h2>Practice code</h2></div></div>
+        <p className="practice-intro">Write and run Python, JavaScript, C++, or Java in your browser.</p>
+        <CodeRunner />
+      </section>
     </main>
     {selected && <div className="modal-backdrop" onClick={() => setSelected(null)}><section className="detail-modal" onClick={e => e.stopPropagation()}>
       <div className="modal-top"><span className="eyebrow">PROBLEM DETAIL / #{selected.id}</span><button className="icon-button" onClick={() => setSelected(null)}><X size={18}/></button></div>
       <h2>{selected.title}</h2><div className="modal-meta"><span className={`difficulty diff-${selected.difficulty.toLowerCase()}`}>{selected.difficulty}</span>{selected.premium && <span className="topic-chip">Premium</span>}{(selected.topics || []).map(t => <span className="topic-chip" key={t}>{t}</span>)}</div>
       <div className="modal-actions"><button className={solved.includes(String(selected.id)) ? 'primary-button done-button' : 'primary-button'} onClick={() => toggle(solved, setSolved, selected.id)}><CheckCircle2 size={16}/>{solved.includes(String(selected.id)) ? 'Solved' : 'Mark as solved'}</button><button className="secondary-button" onClick={() => toggle(bookmarks, setBookmarks, selected.id)}><Bookmark size={16}/>{bookmarks.includes(String(selected.id)) ? 'Bookmarked' : 'Bookmark'}</button><a className="secondary-button" href={selected.url} target="_blank" rel="noreferrer">Open on LeetCode <ExternalLink size={14}/></a></div>
       <div className="detail-content">
+        <h3>Practice your solution</h3>
+        <CodeRunner problem={selected} />
         {selected.summary && <><h3>How to think</h3><p>{selected.summary}</p></>}
         {selected.description ? <><h3>Problem statement</h3><div className="statement" dangerouslySetInnerHTML={{__html: String(selected.description).startsWith('<') ? selected.description : String(selected.description).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replace(/\r?\n/g, '<br/>')}} /></> : <div className="notice compact"><AlertCircle size={16}/>Full statement isn't included in this metadata record. Open the canonical problem page for the full prompt.</div>}
         {selected.examples?.length > 0 && <><h3>Examples</h3>{selected.examples.map((ex, i) => <pre className="example" key={i}>{formatExample(ex)}</pre>)}</>}

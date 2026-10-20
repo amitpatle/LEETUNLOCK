@@ -50,6 +50,7 @@ The import script validates the response and writes the snapshot only when a rec
 - Difficulty, topic, solved/bookmarked and free/premium filters
 - Per-device solved and bookmark persistence using localStorage
 - Progress export to JSON
+- In-browser practice editor with Python, JavaScript, C++ and Java execution through Judge0 CE
 - Responsive layout and dark/light themes
 - Problem details, canonical LeetCode links, statement, examples, constraints, hints and starter snippets when the source provides them
 - Curated learning content merged by problem ID when available
@@ -64,6 +65,10 @@ public/data/curated-problems.json
                              Curated learning records
 scripts/import-catalog.mjs   Catalog import and validation script
 ```
+
+## Code execution
+
+The Practice section and problem details include a code editor for Python, JavaScript, C++, and Java. Code is sent to the public Judge0 CE endpoint for execution, so network access is required and public-service rate limits may apply. Do not run secrets or private sensitive code.
 
 ## Data note
 
