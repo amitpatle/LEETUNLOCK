@@ -1,92 +1,273 @@
-# LeetUnlock — direct project
 
-A responsive React/Vite problem catalog with search, difficulty/topic filters, solved/bookmark tracking, dark/light mode, problem detail panels, local progress persistence, and JSON export.
+# `LEETUNLOCK` —  LEET CODE UNLOCKED
 
-LeetUnlock is a monochrome coding workspace for exploring problems, tracking progress, and opening canonical LeetCode statements.
+<p align="center">
+  <strong>FIND THE PROBLEM. DECODE THE LOGIC. UNLOCK THE SOLUTION.</strong>
+  <br />
+  <sub>A minimalist workspace for LeetCode problems and algorithmic problem-solving.</sub>
+</p>
 
-## Preview
+<p align="center">
+  <a href="https://leetunlock.devs.li">
+    <img src="https://img.shields.io/badge/↗_LAUNCH_LEETUNLOCK-000000?style=for-the-badge&labelColor=000000" alt="Launch LeetUnlock" />
+  </a>
+  <br /><br />
+  <a href="https://github.com/amitpatle/LEETUNLOCK">SOURCE CODE</a>
+  &nbsp; · &nbsp;
+  <a href="https://github.com/amitpatle/LEETUNLOCK/issues">REPORT AN ISSUE</a>
+</p>
 
-![LeetUnlock coding workspace](./public/leetunlock-preview.svg)
+<p align="center">
+  <img src="https://img.shields.io/badge/REACT-000000?style=flat-square&logo=react&logoColor=white" alt="React" />
+  <img src="https://img.shields.io/badge/VITE-000000?style=flat-square&logo=vite&logoColor=white" alt="Vite" />
+  <img src="https://img.shields.io/badge/JAVASCRIPT-000000?style=flat-square&logo=javascript&logoColor=white" alt="JavaScript" />
+  <img src="https://img.shields.io/badge/OPEN_SOURCE-000000?style=flat-square&logo=github&logoColor=white" alt="Open source" />
+</p>
 
-## Run locally
+---
 
-Requires Node.js 18 or newer.
+<p align="center">
+  <img src="./public/leetunlock-preview.svg" alt="LeetUnlock — monochrome coding workspace" width="100%" />
+</p>
 
-```bash
-npm install
-npm run dev
+## `01 / SYSTEM OVERVIEW`
+
+LeetUnlock is a searchable LeetCode problem catalog and coding workspace built to make algorithm practice faster and more organized.
+
+Discover thousands of coding challenges, navigate by topic and difficulty, explore available curated solutions, and practice your own implementations—all through a clean, monochrome interface.
+
+```text
+> INITIALIZING LEETUNLOCK...
+> INDEXING PROBLEM CATALOG...
+> LOADING SOLUTION RESOURCES...
+> SYSTEM READY.
 ```
 
-Open the local URL printed by Vite.
+**Less searching. More solving.**
 
-To create a production build:
+## `02 / CORE SYSTEMS`
 
-```bash
-npm run build
-npm run preview
-```
+<table>
+<tr>
+<td width="50%" valign="top">
 
-## Import the catalog
+### 01 — PROBLEM INDEX
 
-The repository includes a catalog snapshot at `public/data/problems.json`, so the app works offline after installation. To fetch the latest catalog from the configured public source:
+- Search titles, IDs, slugs, tags, and descriptions
+- Filter by difficulty and topic
+- Filter solved and bookmarked problems
+- Filter free and premium problems
+- Open original LeetCode problem pages
+
+</td>
+<td width="50%" valign="top">
+
+### 02 — SOLUTION EXPLORER
+
+- Access curated solution code where available
+- Explore statements, examples, and constraints
+- Review hints and starter templates when provided
+- Navigate to canonical LeetCode references
+- Use problem details to guide your approach
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+### 03 — CODE LAB
+
+- In-browser coding editor
+- Python, JavaScript, C++, and Java
+- Remote execution through Judge0 CE
+- Experiment with your own implementations
+- Practice without leaving the workspace
+
+</td>
+<td width="50%" valign="top">
+
+### 04 — PROGRESS ENGINE
+
+- Mark problems as solved
+- Bookmark challenges for later
+- Persist progress with browser localStorage
+- Export progress as JSON
+- Switch between dark and light themes
+
+</td>
+</tr>
+</table>
+
+### ADDITIONAL MODULES
+
+- **EDU:** DSA roadmap and topic-based learning library
+- **RESOURCE INDEX:** links to free educational material
+- **REQUEST PORT:** feature requests, bug reports, and content corrections
+- **RESPONSIVE INTERFACE:** layouts for desktop and mobile
+
+> **Solution coverage:** The curated dataset contains 80 enriched learning records. Complete solution code is available only for selected curated problems. Other records may provide problem statements, metadata, examples, hints, constraints, or starter templates.
+
+## `03 / CATALOG ENGINE`
+
+The application uses a bundled catalog with optional remote data loading.
+
+| RESOURCE | FUNCTION |
+|---|---|
+| `public/data/problems.json` | Offline problem catalog |
+| `public/data/curated-problems.json` | Enriched learning records |
+| `scripts/import-catalog.mjs` | Import and validate catalog data |
+| `scripts/build-curated.mjs` | Generate curated records |
+
+The bundled snapshot currently contains **4,087 records**. The total may change when refreshed.
+
+The application checks its local catalog first and then attempts to load the configured public dataset:
+
+[`merged_problems.json`](https://raw.githubusercontent.com/mcaupybugs/leetcode-problems-db/master/merged_problems.json)
+
+If both sources are unavailable, the app can still display its bundled curated records.
+
+### Refresh catalog data
 
 ```bash
 npm run import:catalog
 npm run curate:catalog
 ```
 
-The import script validates the response and writes the snapshot only when a recognizable problem list is returned. If the source is unavailable or changes format, it exits with an error.
+The import script validates the response before writing the catalog and exits with an error if the source is unavailable or its format is unrecognized.
 
-## Catalog data
+## `04 / LOCAL DEPLOYMENT`
 
-- `public/data/curated-problems.json` contains the 80 enriched learning records. All other catalog problems use the bundled catalog statement, metadata, examples, hints, constraints, and code without duplicating that large data in the curated file.
-- On startup, the app first checks `public/data/problems.json`, then attempts to load the public dataset at:
-  `https://raw.githubusercontent.com/mcaupybugs/leetcode-problems-db/master/merged_problems.json`
-- The bundled snapshot currently contains 4,087 records, including the latest public metadata available when it was refreshed. The remote count may change when the catalog is refreshed.
-- If both catalog sources are unavailable, the app still displays the curated records bundled with the project.
+**Requirements:** Node.js 18+ and npm.
 
-## Features
+### Initialize
 
-- Text search across titles, IDs, slugs, tags and descriptions
-- Difficulty, topic, solved/bookmarked and free/premium filters
-- Per-device solved and bookmark persistence using localStorage
-- Progress export to JSON
-- In-browser practice editor with Python, JavaScript, C++ and Java execution through Judge0 CE
-- Responsive layout and dark/light themes
-- Home catalog and EDU pages for separating discovery from practice
-- Dashboard DSA roadmap and a free learning library with open resources
-- Request tab for feature requests, bug reports, and content corrections by email
-- Problem details, canonical LeetCode links, statement, examples, constraints, hints and starter templates when the source provides them. Only the curated records include verified solution code; catalog snippets are starting points, not completed solutions.
-- Curated learning content merged by problem ID when available
-
-## Project structure
-
-```text
-src/main.jsx                 React application and catalog logic
-src/style.css                Application styles and responsive layout
-public/data/problems.json    Offline catalog snapshot
-public/data/curated-problems.json
-                             Curated learning records
-scripts/import-catalog.mjs   Catalog import and validation script
-scripts/build-curated.mjs    Generate records for all catalog problems
+```bash
+git clone https://github.com/amitpatle/LEETUNLOCK.git
+cd LEETUNLOCK
+npm install
+npm run dev
 ```
 
-## Code execution
+Open the local URL printed by Vite.
 
-The Practice section and problem details include a code editor for Python, JavaScript, C++, and Java. Code is sent to the public Judge0 CE endpoint for execution, so network access is required and public-service rate limits may apply. Do not run secrets or private sensitive code.
+### Production build
 
-## Developer
+```bash
+npm run build
+npm run preview
+```
 
-LeetUnlock is maintained by [A M i T](https://github.com/amitpatle), an open-source developer on GitHub. Their public profile bio is: “There is always one more bug to fix.” The profile currently lists 39 public repositories and 29 followers. Visit the [GitHub profile](https://github.com/amitpatle) or the [LEETUNLOCK repository](https://github.com/amitpatle/LEETUNLOCK).
+## `05 / ARCHITECTURE`
 
-## Requests and issue reports
+```text
+LEETUNLOCK/
+├── src/
+│   ├── main.jsx
+│   └── style.css
+├── public/
+│   ├── data/
+│   │   ├── problems.json
+│   │   └── curated-problems.json
+│   └── leetunlock-preview.svg
+├── scripts/
+│   ├── import-catalog.mjs
+│   └── build-curated.mjs
+└── README.md
+```
 
-Use the **Request** tab to send a feature request, bug report, content correction, or general message. Messages are routed privately by the server-side API using Resend, with `RESEND_API_KEY`, `MAIL_FROM`, and `CONTACT_EMAIL` configured as server-side environment variables. `MAIL_FROM` must be a sender address or domain verified with Resend; never put these values in frontend code.
+## `06 / TECHNOLOGY STACK`
 
-## Library
+| TECHNOLOGY | PURPOSE |
+|---|---|
+| React | User interface |
+| Vite | Development server and production builds |
+| JavaScript | Application logic |
+| JSON | Catalog and curated data |
+| localStorage | Local progress persistence |
+| Judge0 CE | Remote code execution |
+| Resend | Server-side contact email delivery |
 
-The Dashboard includes a free DSA learning library covering complexity, arrays, strings, hashing, linked lists, stacks, queues, sorting, searching, trees, heaps, graphs, recursion, backtracking, greedy algorithms, and dynamic programming. Each topic includes a practical learning method and links to free resources such as [MIT OpenCourseWare](https://ocw.mit.edu/), [CS50](https://cs50.harvard.edu/x/), [freeCodeCamp](https://www.freecodecamp.org/learn/), [VisuAlgo](https://visualgo.net/en), [OpenDSA](https://opendsa-server.cs.vt.edu/), [Khan Academy](https://www.khanacademy.org/computing/computer-science/algorithms), and [cp-algorithms](https://cp-algorithms.com/).
+## `07 / EXECUTION & SECURITY`
 
-## Data note
+The Practice section and problem details provide an editor for Python, JavaScript, C++, and Java.
 
-LeetCode content and problem statements belong to their respective rights holders. The project links back to LeetCode and uses a public community dataset as an optional data source. Review that dataset's license and LeetCode's terms before redistributing fetched statements or editorial content.
+Code execution sends submitted code to the public Judge0 CE endpoint. An internet connection is required, and public-service availability and rate limits may apply.
+
+**Security protocol**
+
+- Do not submit passwords, credentials, API keys, or sensitive private code to a public execution service.
+- Keep email credentials on the server.
+- Never expose secrets in frontend code or commit them to the repository.
+
+## `08 / REQUEST PORT`
+
+Use the website's **Request** tab to submit:
+
+- Feature requests
+- Bug reports
+- Problem-content corrections
+- General feedback
+
+The server-side API uses Resend to route messages privately.
+
+Configure these server-side environment variables:
+
+```text
+RESEND_API_KEY
+MAIL_FROM
+CONTACT_EMAIL
+```
+
+`MAIL_FROM` must use a sender address or domain verified with Resend.
+
+## `09 / KNOWLEDGE LIBRARY`
+
+Explore DSA concepts across:
+
+`COMPLEXITY` · `ARRAYS` · `STRINGS` · `HASHING` · `LINKED LISTS` · `STACKS` · `QUEUES` · `SORTING` · `SEARCHING` · `TREES` · `HEAPS` · `GRAPHS` · `RECURSION` · `BACKTRACKING` · `GREEDY` · `DYNAMIC PROGRAMMING`
+
+### External learning resources
+
+- [MIT OpenCourseWare](https://ocw.mit.edu/)
+- [CS50](https://cs50.harvard.edu/x/)
+- [freeCodeCamp](https://www.freecodecamp.org/learn/)
+- [VisuAlgo](https://visualgo.net/en)
+- [OpenDSA](https://opendsa-server.cs.vt.edu/)
+- [Khan Academy](https://www.khanacademy.org/computing/computer-science/algorithms)
+- [CP-Algorithms](https://cp-algorithms.com/)
+
+## `10 / CONTRIBUTION PROTOCOL`
+
+Contributions, corrections, and improvements are welcome.
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Implement your changes.
+4. Test the application and production build.
+5. Submit a pull request.
+
+**Repository:** [amitpatle/LEETUNLOCK](https://github.com/amitpatle/LEETUNLOCK)
+
+## `11 / DEVELOPER IDENTITY`
+
+<p align="center">
+  <strong>A M i T</strong>
+  <br />
+  <sub>OPEN-SOURCE DEVELOPER</sub>
+  <br /><br />
+  <a href="https://github.com/amitpatle">GITHUB ↗</a>
+  &nbsp; · &nbsp;
+  <a href="https://github.com/amitpatle/LEETUNLOCK">REPOSITORY ↗</a>
+  &nbsp; · &nbsp;
+  <a href="https://leetunlock.devs.li">LIVE WEBSITE ↗</a>
+</p>
+
+---
+
+<p align="center">
+  <strong>ONE PROBLEM. ONE APPROACH. ONE STEP FORWARD.</strong>
+  <br /><br />
+  <a href="https://leetunlock.devs.li">[ ACCESS LEETUNLOCK ↗ ]</a>
+</p>
+
+<sub>LeetUnlock is an independent educational project and is not affiliated with or endorsed by LeetCode. Problem statements, trademarks, and third-party datasets belong to their respective rights holders. Review applicable licenses and platform terms before redistributing third-party content.</sub>
