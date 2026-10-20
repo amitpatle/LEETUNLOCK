@@ -1,5 +1,5 @@
 import { mkdir, writeFile } from 'node:fs/promises'
-const url = process.env.ALGOATLAS_DATA_URL || 'https://raw.githubusercontent.com/neenza/leetcode-problems/main/merged_problems.json'
+const url = process.env.ALGOATLAS_DATA_URL || 'https://raw.githubusercontent.com/mcaupybugs/leetcode-problems-db/master/merged_problems.json'
 const out = new URL('../public/data/problems.json', import.meta.url)
 console.log(`Downloading catalog from ${url}`)
 const response = await fetch(url, { headers: { 'User-Agent': 'AlgoAtlas educational catalog importer' } })

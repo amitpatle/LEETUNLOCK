@@ -2,6 +2,12 @@
 
 A responsive React/Vite problem catalog with search, difficulty/topic filters, solved/bookmark tracking, dark/light mode, problem detail panels, local progress persistence, and JSON export.
 
+## Preview
+
+![LeetUnlock coding workspace](./docs/leetunlock-home.png)
+
+LeetUnlock is a monochrome coding workspace for exploring problems, tracking progress, and opening canonical LeetCode statements.
+
 ## Start it
 
 Requires Node.js 18+.
@@ -17,7 +23,7 @@ Open the local URL printed by Vite.
 
 - `public/data/curated-problems.json` contains 80 curated LeetUnlock learning records.
 - On startup, the app first checks `public/data/problems.json`, then attempts to load the public dataset at:
-  `https://raw.githubusercontent.com/neenza/leetcode-problems/main/merged_problems.json`
+  `https://raw.githubusercontent.com/mcaupybugs/leetcode-problems-db/master/merged_problems.json`
 - The public dataset README describes a dataset of 2,913 free problems with fields including title, ID, difficulty, topics, description, examples, constraints, hints, starter snippets, and some editorial content. The actual remote count may change. This is **not a verified 3,600-record snapshot**.
 - To download the current source dataset into the project for offline use, run:
   ```bash

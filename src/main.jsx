@@ -1,21 +1,49 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { Search, SlidersHorizontal, Bookmark, CheckCircle2, ExternalLink, X, Sun, Moon, Database, Code2, ChevronRight, Sparkles, RefreshCw, Download, AlertCircle, Tag, Clock3, SearchX } from 'lucide-react'
+import { Search, SlidersHorizontal, Bookmark, CheckCircle2, ExternalLink, Heart, X, Sun, Moon, Database, Code2, ChevronRight, Sparkles, RefreshCw, Download, AlertCircle, Tag, Clock3, SearchX } from 'lucide-react'
 import './style.css'
 
-const REMOTE_DATA = 'https://raw.githubusercontent.com/neenza/leetcode-problems/main/merged_problems.json'
+const REMOTE_DATA = 'https://raw.githubusercontent.com/mcaupybugs/leetcode-problems-db/master/merged_problems.json'
 const CURATED_URL = '/data/curated-problems.json'
 const LOCAL_URL = '/data/problems.json'
 
+function normalizeTopics(value) {
+  if (Array.isArray(value)) return value.map(topic => typeof topic === 'string' ? topic : topic?.name).filter(Boolean)
+  if (value && typeof value === 'object') {
+    return [value.primary, ...(Array.isArray(value.secondary) ? value.secondary : [])].filter(Boolean)
+  }
+  return []
+}
+
+function readStoredList(key) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || '[]')
+    return Array.isArray(value) ? value.map(String) : []
+  } catch {
+    return []
+  }
+}
+
+function formatExample(example) {
+  if (typeof example === 'string') return example
+  if (!example || typeof example !== 'object') return String(example)
+  if (example.example_text || example.text) return example.example_text || example.text
+  return [
+    example.input && `Input: ${example.input}`,
+    example.output && `Output: ${example.output}`,
+    example.explanation && `Explanation: ${example.explanation}`
+  ].filter(Boolean).join('\n\n') || JSON.stringify(example, null, 2)
+}
+
 function normalize(p, i = 0) {
   const slug = p.problem_slug ?? p.titleSlug ?? p.slug ?? p.titleSlug ?? ''
-  const topics = p.topics ?? p.topicTags?.map(t => typeof t === 'string' ? t : t.name) ?? p.tags ?? []
+  const topics = normalizeTopics(p.topics ?? p.topicTags ?? p.tags)
   const id = String(p.frontend_id ?? p.frontendQuestionId ?? p.problem_id ?? p.id ?? i + 1)
   return {
-    ...p, id, title: p.title ?? p.title_name ?? `Problem ${id}`,
-    slug, difficulty: p.difficulty ?? 'Unknown',
-    topics: Array.isArray(topics) ? topics : [],
-    description: p.description ?? p.content ?? '',
+    ...p, id, title: String(p.title ?? p.title_name ?? `Problem ${id}`),
+    slug, difficulty: String(p.difficulty ?? 'Unknown'),
+    topics,
+    description: typeof (p.description ?? p.content) === 'string' ? (p.description ?? p.content) : '',
     examples: p.examples ?? [], constraints: p.constraints ?? [],
     hints: p.hints ?? [], snippets: p.code_snippets ?? p.codeSnippets ?? {},
     premium: Boolean(p.paidOnly ?? p.isPaidOnly),
@@ -37,8 +65,8 @@ function App() {
   const [status, setStatus] = useState('All')
   const [premium, setPremium] = useState('All')
   const [selected, setSelected] = useState(null)
-  const [solved, setSolved] = useState(() => JSON.parse(localStorage.getItem('aa-solved') || '[]'))
-  const [bookmarks, setBookmarks] = useState(() => JSON.parse(localStorage.getItem('aa-bookmarks') || '[]'))
+  const [solved, setSolved] = useState(() => readStoredList('aa-solved'))
+  const [bookmarks, setBookmarks] = useState(() => readStoredList('aa-bookmarks'))
   const [dark, setDark] = useState(() => localStorage.getItem('aa-theme') !== 'light')
   const [showFilters, setShowFilters] = useState(false)
 
@@ -122,7 +150,7 @@ function App() {
   return <div className={dark ? 'app dark' : 'app light'}>
     <header className="topbar">
       <a className="brand" href="#"><span className="brand-mark">&gt;_</span><span>LEET<span className="brand-accent">UNLOCK</span><small>THE CODING WORKSPACE</small></span></a>
-      <nav><a className="nav-active" href="#catalog">Catalog</a><a href="#progress">Progress</a><a href="https://leetcode.com/problemset/" target="_blank" rel="noreferrer">LeetCode <ExternalLink size={13}/></a></nav>
+      <nav><a className="nav-active" href="#catalog">Catalog</a><a href="#progress">Progress</a><a href="https://leetcode.com/problemset/" target="_blank" rel="noreferrer">LeetCode <ExternalLink size={13}/></a><a className="sponsor-link" href="https://github.com/sponsors/amitpatle" target="_blank" rel="noreferrer"><Heart size={13}/> Sponsor</a></nav>
       <div className="top-actions"><button className="icon-button" title="Export progress" onClick={exportProgress}><Download size={17}/></button><button className="icon-button" title="Toggle theme" onClick={() => setDark(!dark)}>{dark ? <Sun size={17}/> : <Moon size={17}/>}</button></div>
     </header>
     <main>
@@ -151,13 +179,12 @@ function App() {
         {source === 'remote' && <div className="source-note"><span className="source-dot"></span> Catalog loaded from public dataset · curated content is merged when IDs match</div>}
         {loading ? <div className="loading-state"><div className="spinner"></div><p>Mapping the problem universe…</p></div> : visible.length === 0 ? <div className="empty-state"><SearchX size={32}/><h3>No problems found</h3><p>Try a different search or clear your filters.</p><button className="secondary-button" onClick={clearFilters}>Reset filters</button></div> : <div className="problem-list">
           <div className="list-header"><span>PROBLEM</span><span>TOPICS</span><span>DIFFICULTY</span><span>STATUS</span></div>
-          {visible.slice(0, 250).map((p, i) => <article className="problem-row" key={`${p.id}-${p.slug}`} onClick={() => setSelected(p)} tabIndex={0} onKeyDown={e => e.key === 'Enter' && setSelected(p)}>
+          {visible.map(p => <article className="problem-row" key={`${p.id}-${p.slug}`} onClick={() => setSelected(p)} tabIndex={0} onKeyDown={e => e.key === 'Enter' && setSelected(p)}>
             <div className="problem-main"><span className="problem-id">{p.id.padStart ? `#${p.id}` : p.id}</span><div className="problem-name"><strong>{p.title}</strong><small>{p.premium ? 'PREMIUM' : p.hasCurated || curatedById.has(String(p.id)) ? 'CURATED NOTES AVAILABLE' : p.slug || 'PROBLEM'}</small></div></div>
             <div className="topic-list">{(p.topics || []).slice(0, 2).map(t => <span className="topic-chip" key={t}>{t}</span>)}{(p.topics || []).length > 2 && <span className="topic-more">+{p.topics.length - 2}</span>}</div>
             <div><span className={`difficulty diff-${p.difficulty.toLowerCase()}`}>{p.difficulty}</span></div>
             <div className="row-status"><button title={solved.includes(String(p.id)) ? 'Mark unsolved' : 'Mark solved'} className={`row-action ${solved.includes(String(p.id)) ? 'is-done' : ''}`} onClick={e => { e.stopPropagation(); toggle(solved, setSolved, p.id) }}><CheckCircle2 size={17}/></button><button title={bookmarks.includes(String(p.id)) ? 'Remove bookmark' : 'Bookmark'} className={`row-action ${bookmarks.includes(String(p.id)) ? 'is-bookmarked' : ''}`} onClick={e => { e.stopPropagation(); toggle(bookmarks, setBookmarks, p.id) }}><Bookmark size={16}/></button><ChevronRight size={16} className="row-chevron"/></div>
           </article>)}
-          {visible.length > 250 && <div className="list-footer">Showing first 250 of {visible.length.toLocaleString()} matches. Narrow your search to find a specific problem.</div>}
         </div>}
         <div className="catalog-footer"><span>LEETUNLOCK / INDEX V1.0</span><span>Progress stored locally on this device</span></div>
       </section>
@@ -169,10 +196,10 @@ function App() {
       <div className="detail-content">
         {selected.summary && <><h3>How to think</h3><p>{selected.summary}</p></>}
         {selected.description ? <><h3>Problem statement</h3><div className="statement" dangerouslySetInnerHTML={{__html: String(selected.description).startsWith('<') ? selected.description : selected.description.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('\\n','<br/>')}} /></> : <div className="notice compact"><AlertCircle size={16}/>Full statement isn't included in this metadata record. Open the canonical problem page for the full prompt.</div>}
-        {selected.examples?.length > 0 && <><h3>Examples</h3>{selected.examples.map((ex, i) => <pre className="example" key={i}>{typeof ex === 'string' ? ex : ex.example_text || ex.text || JSON.stringify(ex, null, 2)}</pre>)}</>}
+        {selected.examples?.length > 0 && <><h3>Examples</h3>{selected.examples.map((ex, i) => <pre className="example" key={i}>{formatExample(ex)}</pre>)}</>}
         {selected.constraints?.length > 0 && <><h3>Constraints</h3><ul>{selected.constraints.map((c, i) => <li key={i}>{typeof c === 'string' ? c : JSON.stringify(c)}</li>)}</ul></>}
         {selected.hints?.length > 0 && <><h3>Hints</h3><ol>{selected.hints.map((h, i) => <li key={i}>{typeof h === 'string' ? h : JSON.stringify(h)}</li>)}</ol></>}
-        {selected.solutions && typeof selected.solutions === 'object' && <><h3>Curated solutions</h3>{Object.entries(selected.solutions).map(([lang, code]) => <div key={lang} className="code-block"><div className="code-title"><Code2 size={14}/>{lang}</div><pre>{typeof code === 'string' ? code : JSON.stringify(code, null, 2)}</pre></div>)}</>}
+        {selected.solutions && typeof selected.solutions === 'object' && <><h3>Curated solutions</h3>{Object.entries(selected.solutions).map(([lang, solution]) => <div key={lang} className="code-block"><div className="code-title"><Code2 size={14}/>{lang}</div><pre>{typeof solution === 'string' ? solution : solution?.code || JSON.stringify(solution, null, 2)}</pre></div>)}</>}
         {selected.snippets && Object.keys(selected.snippets).length > 0 && <><h3>Starter code</h3>{Object.entries(selected.snippets).slice(0, 3).map(([lang, code]) => <div key={lang} className="code-block"><div className="code-title"><Code2 size={14}/>{lang}</div><pre>{typeof code === 'string' ? code : JSON.stringify(code, null, 2)}</pre></div>)}</>}
       </div>
     </section></div>}
