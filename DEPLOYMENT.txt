@@ -33,6 +33,7 @@ Create a file named ".env.local" in the project root:
 
     RESEND_API_KEY=re_your_resend_api_key
     MAIL_FROM=your-verified-sender@example.com
+    CONTACT_EMAIL=your-private-recipient@example.com
 
 Replace the placeholder values with your real Resend API key and verified
 sender address.
@@ -41,7 +42,7 @@ IMPORTANT:
 - Never commit ".env.local".
 - Never put RESEND_API_KEY in React code or public files.
 - MAIL_FROM must be verified in Resend.
-- The destination address is amitpxtle@gmail.com.
+- CONTACT_EMAIL is the private destination for request messages.
 
 
 4. RUN LOCALLY WITH THE API
@@ -60,10 +61,6 @@ Open the URL shown by Vercel, usually:
     http://localhost:3000/#request
 
 Open the Request tab, enter a message, and click "Send message".
-
-The request should be sent to:
-
-    amitpxtle@gmail.com
 
 If Vercel CLI is not installed, it will ask to install it. You can also
 install it globally:
@@ -115,6 +112,7 @@ Add the production environment variables:
 
     vercel env add RESEND_API_KEY production
     vercel env add MAIL_FROM production
+    vercel env add CONTACT_EMAIL production
 
 Deploy to production:
 
@@ -127,7 +125,8 @@ Option B: Deploy through the Vercel dashboard:
 3. Open Project Settings > Environment Variables.
 4. Add RESEND_API_KEY.
 5. Add MAIL_FROM with a verified Resend sender.
-6. Redeploy the project.
+6. Add CONTACT_EMAIL with the private destination address.
+7. Redeploy the project.
 
 
 8. VERIFY THE DEPLOYMENT
@@ -137,9 +136,7 @@ Open the deployed site:
 
     https://your-project.vercel.app/#request
 
-Submit a test request and confirm delivery to:
-
-    amitpxtle@gmail.com
+Submit a test request and confirm private delivery.
 
 If sending fails, check:
 
@@ -169,4 +166,3 @@ If sending fails, check:
     npm run preview
     npx vercel dev
     vercel --prod
-

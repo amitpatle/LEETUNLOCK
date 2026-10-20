@@ -431,7 +431,7 @@ function App() {
             <button className="primary-button" type="submit" disabled={requestStatus === 'Sending…'}>{requestStatus === 'Sending…' ? 'Sending…' : 'Send message'} <Mail size={14}/></button>
           </form>
           {requestStatus && <p className="request-status" aria-live="polite">{requestStatus}</p>}
-          <p className="request-address">Messages are sent to <a href="mailto:amitpxtle@gmail.com">amitpxtle@gmail.com</a> through the configured mail service.</p>
+          <p className="request-address">Messages are delivered privately through the configured mail service.</p>
         </div>
       </section>}
     </main>

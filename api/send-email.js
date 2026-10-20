@@ -1,5 +1,3 @@
-const recipient = 'amitpxtle@gmail.com'
-
 export default async function handler(request, response) {
   if (request.method !== 'POST') {
     response.setHeader('Allow', 'POST')
@@ -8,7 +6,8 @@ export default async function handler(request, response) {
 
   const apiKey = process.env.RESEND_API_KEY
   const from = process.env.MAIL_FROM
-  if (!apiKey || !from) return response.status(500).json({ error: 'Email service is not configured.' })
+  const recipient = process.env.CONTACT_EMAIL
+  if (!apiKey || !from || !recipient) return response.status(500).json({ error: 'Email service is not configured.' })
 
   const { type, name, email, message } = request.body || {}
   if (!message || typeof message !== 'string' || message.trim().length < 3) {

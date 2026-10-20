@@ -1,20 +1,33 @@
 import { mkdir, writeFile } from 'node:fs/promises'
-const url = process.env.ALGOATLAS_DATA_URL || 'https://raw.githubusercontent.com/mcaupybugs/leetcode-problems-db/master/merged_problems.json'
 const out = new URL('../public/data/problems.json', import.meta.url)
-console.log(`Downloading catalog from ${url}`)
-const response = await fetch(url, { headers: { 'User-Agent': 'AlgoAtlas educational catalog importer' } })
-if (!response.ok) throw new Error(`Catalog download failed: HTTP ${response.status}. Try opening the source URL in a browser or set ALGOATLAS_DATA_URL.`)
-const text = await response.text()
-if (text.trimStart().startsWith('<')) {
-  throw new Error('Catalog download returned HTML instead of JSON. Check the source URL or set ALGOATLAS_DATA_URL to a valid JSON endpoint.')
+const legacyUrl = process.env.ALGOATLAS_DATA_URL
+const headers = { 'User-Agent': 'LEETUNLOCK educational catalog importer', Referer: 'https://leetcode.com/problemset/' }
+let list
+if (legacyUrl) {
+  console.log(`Downloading catalog from ${legacyUrl}`)
+  const response = await fetch(legacyUrl, { headers })
+  if (!response.ok) throw new Error(`Catalog download failed: HTTP ${response.status}.`)
+  const text = await response.text()
+  if (text.trimStart().startsWith('<')) throw new Error('Catalog download returned HTML instead of JSON.')
+  let raw
+  try { raw = JSON.parse(text) } catch { throw new Error('Catalog download returned invalid JSON.') }
+  list = Array.isArray(raw) ? raw : raw.problems || raw.questions || raw.data?.problemsetQuestionList?.questions || []
+} else {
+  console.log('Downloading the current catalog from LeetCode GraphQL')
+  list = []
+  for (let skip = 0; skip < 5000; skip += 100) {
+    const response = await fetch('https://leetcode.com/graphql', {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: `query { problemsetQuestionListV2(categorySlug: "", limit: 100, skip: ${skip}) { questions { questionFrontendId title titleSlug difficulty paidOnly topicTags { name slug } } } }` })
+    })
+    if (!response.ok) throw new Error(`LeetCode catalog request failed: HTTP ${response.status}.`)
+    const json = await response.json()
+    const batch = json.data?.problemsetQuestionListV2?.questions || []
+    if (!batch.length) break
+    list.push(...batch)
+  }
 }
-let raw
-try {
-  raw = JSON.parse(text)
-} catch {
-  throw new Error('Catalog download returned invalid JSON. Check the source URL or set ALGOATLAS_DATA_URL to a valid JSON endpoint.')
-}
-const list = Array.isArray(raw) ? raw : raw.problems || raw.questions || raw.data?.problemsetQuestionList?.questions || []
 if (!list.length) throw new Error('The source response did not contain a recognized problem list.')
 const seen = new Set()
 const problems = list.map((p) => {
@@ -32,5 +45,10 @@ const problems = list.map((p) => {
   }
 }).filter(p => p.id && !seen.has(p.id) && seen.add(p.id))
 await mkdir(new URL('../public/data/', import.meta.url), { recursive: true })
-await writeFile(out, JSON.stringify({ source: url, fetchedAt: new Date().toISOString(), count: problems.length, problems }, null, 2))
+await writeFile(out, JSON.stringify({
+  source: legacyUrl || 'https://leetcode.com/graphql',
+  fetchedAt: new Date().toISOString(),
+  count: problems.length,
+  problems
+}, null, 2))
 console.log(`Saved ${problems.length} unique problems to ${out.pathname}`)

@@ -42,7 +42,7 @@ The import script validates the response and writes the snapshot only when a rec
 - `public/data/curated-problems.json` contains the 80 enriched learning records. All other catalog problems use the bundled catalog statement, metadata, examples, hints, constraints, and code without duplicating that large data in the curated file.
 - On startup, the app first checks `public/data/problems.json`, then attempts to load the public dataset at:
   `https://raw.githubusercontent.com/mcaupybugs/leetcode-problems-db/master/merged_problems.json`
-- The bundled snapshot currently contains 2,913 records. The remote count may change when the catalog is refreshed.
+- The bundled snapshot currently contains 4,087 records, including the latest public metadata available when it was refreshed. The remote count may change when the catalog is refreshed.
 - If both catalog sources are unavailable, the app still displays the curated records bundled with the project.
 
 ## Features
@@ -81,7 +81,7 @@ LeetUnlock is maintained by [A M i T](https://github.com/amitpatle), an open-sou
 
 ## Requests and issue reports
 
-Use the **Request** tab to send a feature request, bug report, content correction, or general message to [amitpxtle@gmail.com](mailto:amitpxtle@gmail.com). The Vercel-compatible API route uses Resend, with `RESEND_API_KEY` and `MAIL_FROM` configured as server-side environment variables. `MAIL_FROM` must be a sender address or domain verified with Resend; never put `RESEND_API_KEY` in frontend code.
+Use the **Request** tab to send a feature request, bug report, content correction, or general message. Messages are routed privately by the server-side API using Resend, with `RESEND_API_KEY`, `MAIL_FROM`, and `CONTACT_EMAIL` configured as server-side environment variables. `MAIL_FROM` must be a sender address or domain verified with Resend; never put these values in frontend code.
 
 ## Library
 
