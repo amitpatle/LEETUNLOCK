@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { Search, SlidersHorizontal, Bookmark, CheckCircle2, ExternalLink, Heart, X, Sun, Moon, Database, Code2, ChevronRight, Sparkles, RefreshCw, Download, AlertCircle, Tag, Clock3, SearchX } from 'lucide-react'
+import { Search, SlidersHorizontal, Bookmark, CheckCircle2, ExternalLink, Heart, X, Sun, Moon, Database, Code2, ChevronRight, Sparkles, RefreshCw, Download, AlertCircle, Tag, Clock3, SearchX, ArrowUp } from 'lucide-react'
 import './style.css'
 
 const REMOTE_DATA = 'https://raw.githubusercontent.com/mcaupybugs/leetcode-problems-db/master/merged_problems.json'
@@ -151,10 +151,17 @@ function App() {
   const [bookmarks, setBookmarks] = useState(() => readStoredList('aa-bookmarks'))
   const [dark, setDark] = useState(() => getStoredValue('aa-theme', 'dark') !== 'light')
   const [showFilters, setShowFilters] = useState(false)
+  const [showBackToTop, setShowBackToTop] = useState(false)
 
   useEffect(() => { setStoredValue('aa-solved', JSON.stringify(solved)) }, [solved])
   useEffect(() => { setStoredValue('aa-bookmarks', JSON.stringify(bookmarks)) }, [bookmarks])
   useEffect(() => { setStoredValue('aa-theme', dark ? 'dark' : 'light') }, [dark])
+  useEffect(() => {
+    const handleScroll = () => setShowBackToTop(window.scrollY > 400)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   async function loadCatalog() {
     setLoading(true); setError('')
@@ -298,6 +305,7 @@ function App() {
       <div className="footer-open-source"><strong>Open source</strong><span>Improve the workspace, share ideas, and help make interview prep more accessible.</span><a href="https://github.com/amitpatle/LEETUNLOCK" target="_blank" rel="noreferrer">View repository <ExternalLink size={12}/></a></div>
       <small>Problem content belongs to its respective owners.</small>
     </footer>
+    {showBackToTop && <button className="back-to-top" aria-label="Back to top" title="Back to top" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}><ArrowUp size={18}/></button>}
   </div>
 }
 createRoot(document.getElementById('root')).render(<App />)
