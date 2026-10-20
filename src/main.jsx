@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { Search, SlidersHorizontal, Bookmark, CheckCircle2, ExternalLink, Heart, X, Sun, Moon, Database, Code2, ChevronRight, Sparkles, RefreshCw, Download, AlertCircle, Tag, Clock3, SearchX, ArrowUp } from 'lucide-react'
+import { Search, SlidersHorizontal, Bookmark, CheckCircle2, ExternalLink, Heart, X, Sun, Moon, Database, Code2, ChevronRight, Sparkles, RefreshCw, Download, AlertCircle, Tag, Clock3, SearchX, ArrowUp, Mail } from 'lucide-react'
 import './style.css'
 
 const REMOTE_DATA = 'https://raw.githubusercontent.com/mcaupybugs/leetcode-problems-db/master/merged_problems.json'
@@ -188,7 +188,7 @@ function CodeRunner({ problem = null }) {
 }
 
 function App() {
-  const [page, setPage] = useState(() => window.location.hash === '#dashboard' ? 'dashboard' : window.location.hash === '#developer' ? 'developer' : 'home')
+  const [page, setPage] = useState(() => window.location.hash === '#dashboard' ? 'dashboard' : window.location.hash === '#developer' ? 'developer' : window.location.hash === '#request' ? 'request' : 'home')
   const [problems, setProblems] = useState([])
   const [curated, setCurated] = useState([])
   const [loading, setLoading] = useState(true)
@@ -206,6 +206,11 @@ function App() {
   const [dark, setDark] = useState(() => getStoredValue('aa-theme', 'dark') !== 'light')
   const [showFilters, setShowFilters] = useState(false)
   const [showBackToTop, setShowBackToTop] = useState(false)
+  const [requestType, setRequestType] = useState('Feature request')
+  const [requestName, setRequestName] = useState('')
+  const [requestEmail, setRequestEmail] = useState('')
+  const [requestMessage, setRequestMessage] = useState('')
+  const [requestStatus, setRequestStatus] = useState('')
 
   useEffect(() => { setStoredValue('aa-solved', JSON.stringify(solved)) }, [solved])
   useEffect(() => { setStoredValue('aa-bookmarks', JSON.stringify(bookmarks)) }, [bookmarks])
@@ -217,7 +222,7 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
   useEffect(() => {
-    const handleHashChange = () => setPage(window.location.hash === '#dashboard' ? 'dashboard' : window.location.hash === '#developer' ? 'developer' : 'home')
+    const handleHashChange = () => setPage(window.location.hash === '#dashboard' ? 'dashboard' : window.location.hash === '#developer' ? 'developer' : window.location.hash === '#request' ? 'request' : 'home')
     window.addEventListener('hashchange', handleHashChange)
     return () => window.removeEventListener('hashchange', handleHashChange)
   }, [])
@@ -316,7 +321,7 @@ function App() {
   return <div className={dark ? 'app dark' : 'app light'}>
     <header className="topbar">
       <a className="brand" href="#"><span className="brand-mark">&gt;_</span><span>LEET<span className="brand-accent">UNLOCK</span><small>THE CODING WORKSPACE</small></span></a>
-        <nav><a className={page === 'home' ? 'nav-active' : ''} href="#home">Home</a><a className={page === 'dashboard' ? 'nav-active' : ''} href="#dashboard">EDU</a><a className={page === 'developer' ? 'nav-active' : ''} href="#developer">Developer</a><a href="https://leetcode.com/problemset/" target="_blank" rel="noreferrer">LeetCode <ExternalLink size={13}/></a><a className="sponsor-link" href="https://github.com/sponsors/amitpatle" target="_blank" rel="noreferrer"><Heart size={13}/> Sponsor</a></nav>
+        <nav><a className={page === 'home' ? 'nav-active' : ''} href="#home">Home</a><a className={page === 'dashboard' ? 'nav-active' : ''} href="#dashboard">EDU</a><a className={page === 'developer' ? 'nav-active' : ''} href="#developer">Developer</a><a className={page === 'request' ? 'nav-active' : ''} href="#request">Request</a><a href="https://leetcode.com/problemset/" target="_blank" rel="noreferrer">LeetCode <ExternalLink size={13}/></a><a className="sponsor-link" href="https://github.com/sponsors/amitpatle" target="_blank" rel="noreferrer"><Heart size={13}/> Sponsor</a></nav>
       <div className="top-actions"><button className="icon-button" title="Export progress" onClick={exportProgress}><Download size={17}/></button><button className="icon-button" title="Toggle theme" onClick={() => setDark(!dark)}>{dark ? <Sun size={17}/> : <Moon size={17}/>}</button></div>
     </header>
     <main>
@@ -400,6 +405,20 @@ function App() {
               <a className="secondary-button" href={DEVELOPER.repositoryUrl} target="_blank" rel="noreferrer">LEETUNLOCK repository <ExternalLink size={14}/></a>
             </div>
           </div>
+        </div>
+      </section>}
+      {page === 'request' && <section className="request-section">
+        <div className="dashboard-heading"><div className="eyebrow">CONTACT THE BUILDER</div><h1>Request or report.</h1><p>Share an idea, ask for an improvement, or report a problem directly by email.</p></div>
+        <div className="request-card">
+          <div className="request-card-heading"><Mail size={20}/><div><h2>Send a message</h2><p>Your message will be delivered to Amit through the configured mail API.</p></div></div>
+          <form onSubmit={async e => { e.preventDefault(); setRequestStatus('Sending…'); try { const response = await fetch('/api/send-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: requestType, name: requestName, email: requestEmail, message: requestMessage }) }); const result = await response.json(); if (!response.ok) throw new Error(result.error || 'Unable to send the message.'); setRequestStatus('Message sent successfully.'); setRequestMessage(''); } catch (error) { setRequestStatus(error.message || 'Unable to send the message.'); } }}>
+            <label>TYPE<select value={requestType} onChange={e => setRequestType(e.target.value)}><option>Feature request</option><option>Bug report</option><option>Content correction</option><option>General message</option></select></label>
+            <div className="request-fields"><label>YOUR NAME<input value={requestName} onChange={e => setRequestName(e.target.value)} placeholder="Your name" /></label><label>YOUR EMAIL<input type="email" value={requestEmail} onChange={e => setRequestEmail(e.target.value)} placeholder="you@example.com" /></label></div>
+            <label>MESSAGE<textarea required value={requestMessage} onChange={e => setRequestMessage(e.target.value)} placeholder="Tell me what you would like to request or report…" /></label>
+            <button className="primary-button" type="submit" disabled={requestStatus === 'Sending…'}>{requestStatus === 'Sending…' ? 'Sending…' : 'Send message'} <Mail size={14}/></button>
+          </form>
+          {requestStatus && <p className="request-status" aria-live="polite">{requestStatus}</p>}
+          <p className="request-address">Messages are sent to <a href="mailto:amitpxtle@gmail.com">amitpxtle@gmail.com</a> through the configured mail service.</p>
         </div>
       </section>}
     </main>

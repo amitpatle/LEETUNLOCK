@@ -55,6 +55,7 @@ The import script validates the response and writes the snapshot only when a rec
 - Responsive layout and dark/light themes
 - Home catalog and EDU pages for separating discovery from practice
 - Dashboard DSA roadmap and a free learning library with open resources
+- Request tab for feature requests, bug reports, and content corrections by email
 - Problem details, canonical LeetCode links, statement, examples, constraints, hints and starter snippets when the source provides them
 - Curated learning content merged by problem ID when available
 
@@ -77,6 +78,10 @@ The Practice section and problem details include a code editor for Python, JavaS
 ## Developer
 
 LeetUnlock is maintained by [A M i T](https://github.com/amitpatle), an open-source developer on GitHub. Their public profile bio is: “There is always one more bug to fix.” The profile currently lists 39 public repositories and 29 followers. Visit the [GitHub profile](https://github.com/amitpatle) or the [LEETUNLOCK repository](https://github.com/amitpatle/LEETUNLOCK).
+
+## Requests and issue reports
+
+Use the **Request** tab to send a feature request, bug report, content correction, or general message to [amitpxtle@gmail.com](mailto:amitpxtle@gmail.com). The Vercel-compatible API route uses Resend, with `RESEND_API_KEY` and `MAIL_FROM` configured as server-side environment variables. `MAIL_FROM` must be a sender address or domain verified with Resend; never put `RESEND_API_KEY` in frontend code.
 
 ## Library
 
