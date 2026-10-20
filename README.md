@@ -56,7 +56,7 @@ The import script validates the response and writes the snapshot only when a rec
 - Home catalog and EDU pages for separating discovery from practice
 - Dashboard DSA roadmap and a free learning library with open resources
 - Request tab for feature requests, bug reports, and content corrections by email
-- Problem details, canonical LeetCode links, statement, examples, constraints, hints and starter snippets when the source provides them
+- Problem details, canonical LeetCode links, statement, examples, constraints, hints and starter templates when the source provides them. Only the curated records include verified solution code; catalog snippets are starting points, not completed solutions.
 - Curated learning content merged by problem ID when available
 
 ## Project structure

@@ -136,12 +136,19 @@ function getStarterCode(problem, language) {
   return typeof snippet === 'string' ? snippet : snippet?.code || LANGUAGES[language].starter
 }
 
+function getRunnableCode(problem, language) {
+  const code = getStarterCode(problem, language)
+  if (language === 'cpp' && !/\bmain\s*\(/.test(code)) return LANGUAGES.cpp.starter
+  if (language === 'java' && !/\bstatic\s+void\s+main\s*\(/.test(code)) return LANGUAGES.java.starter
+  return code
+}
+
 function getLanguageCode(value) {
   const normalized = String(value || '').toLowerCase()
-  if (normalized.includes('python')) return 'python'
-  if (normalized.includes('javascript') || normalized === 'js') return 'javascript'
-  if (normalized.includes('c++') || normalized === 'cpp') return 'cpp'
-  if (normalized.includes('java')) return 'java'
+  if (normalized === 'python' || normalized === 'python3') return 'python'
+  if (normalized === 'javascript' || normalized === 'js') return 'javascript'
+  if (normalized === 'c++' || normalized === 'cpp') return 'cpp'
+  if (normalized === 'java') return 'java'
   return normalized
 }
 
@@ -153,8 +160,23 @@ function getSolutionForLanguage(solutions, language) {
   return typeof solution === 'string' ? solution : solution?.code || JSON.stringify(solution, null, 2)
 }
 
+function getSolutionLanguageOptions(solutions) {
+  if (!solutions || typeof solutions !== 'object') return []
+  return Object.entries(solutions).map(([key]) => ({
+    value: getLanguageCode(key),
+    label: key,
+    code: typeof solutions[key] === 'string' ? solutions[key] : solutions[key]?.code || JSON.stringify(solutions[key], null, 2)
+  })).filter(option => option.code?.trim())
+}
+
 function formatExecutionResult(result) {
-  if (result.compile_output) return `Compile error:\n${result.compile_output}`
+  if (result.compile_output) {
+    const detail = result.compile_output
+    const hint = /undefined reference to [`']main|does not contain a main method/i.test(detail)
+      ? '\n\nThis solution is a platform function/class, not a standalone program. Use the runnable template in the editor and add input/output code in main.'
+      : ''
+    return `Compile error:\n${detail}${hint}`
+  }
   if (result.stderr) return `Error:\n${result.stderr}`
   if (result.stdout) return result.stdout
   return result.status?.description || 'The program finished without output.'
@@ -162,7 +184,7 @@ function formatExecutionResult(result) {
 
 function CodeRunner({ problem = null, onLanguageChange }) {
   const [language, setLanguage] = useState('python')
-  const [code, setCode] = useState(() => getStarterCode(problem, 'python'))
+  const [code, setCode] = useState(() => getRunnableCode(problem, 'python'))
   const [input, setInput] = useState('')
   const [output, setOutput] = useState('')
   const [running, setRunning] = useState(false)
@@ -170,7 +192,7 @@ function CodeRunner({ problem = null, onLanguageChange }) {
   const changeLanguage = value => {
     setLanguage(value)
     onLanguageChange?.(value)
-    setCode(getStarterCode(problem, value))
+    setCode(getRunnableCode(problem, value))
     setOutput('')
   }
 
@@ -277,7 +299,10 @@ function App() {
     }
   }, [selected])
   useEffect(() => {
-    setSolutionLanguage('python')
+    const source = selected?.solutions && Object.keys(selected.solutions).length > 0 ? selected.solutions : selected?.snippets
+    const options = getSolutionLanguageOptions(source)
+    const preferred = options.find(option => option.value === 'python') || options[0]
+    setSolutionLanguage(preferred?.value || 'python')
   }, [selected?.id])
 
   async function loadCatalog() {
@@ -488,8 +513,8 @@ function App() {
         {selected.examples?.length > 0 && <><h3>Examples</h3>{selected.examples.map((ex, i) => <pre className="example" key={i}>{formatExample(ex)}</pre>)}</>}
         {selected.constraints?.length > 0 && <><h3>Constraints</h3><ul>{selected.constraints.map((c, i) => <li key={i}>{typeof c === 'string' ? c : JSON.stringify(c)}</li>)}</ul></>}
         {selected.hints?.length > 0 && <><h3>Hints</h3><ol>{selected.hints.map((h, i) => <li key={i}>{typeof h === 'string' ? h : JSON.stringify(h)}</li>)}</ol></>}
-        {selected.solutions && typeof selected.solutions === 'object' && Object.keys(selected.solutions).length > 0 && <><div className="solution-heading"><h3>Curated solution · {LANGUAGES[solutionLanguage].label}</h3><select aria-label="Solution language" value={solutionLanguage} onChange={e => setSolutionLanguage(e.target.value)}>{Object.entries(LANGUAGES).map(([key, value]) => <option key={key} value={key}>{value.label}</option>)}</select></div>{getSolutionForLanguage(selected.solutions, solutionLanguage) ? <div className="code-block"><div className="code-title"><Code2 size={14}/>{LANGUAGES[solutionLanguage].label}</div><pre>{getSolutionForLanguage(selected.solutions, solutionLanguage)}</pre></div> : <div className="notice compact"><AlertCircle size={16}/>No curated solution is available in {LANGUAGES[solutionLanguage].label}. Choose another language above.</div>}</>}
-        {(!selected.solutions || Object.keys(selected.solutions).length === 0) && selected.snippets && Object.keys(selected.snippets).length > 0 && <><div className="solution-heading"><h3>Available solution · {LANGUAGES[solutionLanguage].label}</h3><select aria-label="Solution language" value={solutionLanguage} onChange={e => setSolutionLanguage(e.target.value)}>{Object.entries(LANGUAGES).map(([key, value]) => <option key={key} value={key}>{value.label}</option>)}</select></div>{getSolutionForLanguage(selected.snippets, solutionLanguage) ? <div className="code-block"><div className="code-title"><Code2 size={14}/>{LANGUAGES[solutionLanguage].label}</div><pre>{getSolutionForLanguage(selected.snippets, solutionLanguage)}</pre></div> : <div className="notice compact"><AlertCircle size={16}/>No solution code is available in {LANGUAGES[solutionLanguage].label}. Choose another language above.</div>}</>}
+        {selected.solutions && typeof selected.solutions === 'object' && Object.keys(selected.solutions).length > 0 && <><div className="solution-heading"><h3>Curated solution · {solutionLanguage}</h3><select aria-label="Solution language" value={solutionLanguage} onChange={e => setSolutionLanguage(e.target.value)}>{getSolutionLanguageOptions(selected.solutions).map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></div>{getSolutionForLanguage(selected.solutions, solutionLanguage) ? <div className="code-block"><div className="code-title"><Code2 size={14}/>{solutionLanguage}</div><pre>{getSolutionForLanguage(selected.solutions, solutionLanguage)}</pre></div> : <div className="notice compact"><AlertCircle size={16}/>No curated solution is available in this language.</div>}</>}
+        {(!selected.solutions || Object.keys(selected.solutions).length === 0) && selected.snippets && Object.keys(selected.snippets).length > 0 && <><div className="solution-heading"><h3>Starter template · {solutionLanguage}</h3><select aria-label="Template language" value={solutionLanguage} onChange={e => setSolutionLanguage(e.target.value)}>{getSolutionLanguageOptions(selected.snippets).map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></div>{getSolutionForLanguage(selected.snippets, solutionLanguage) ? <div className="code-block"><div className="code-title"><Code2 size={14}/>{solutionLanguage}</div><pre>{getSolutionForLanguage(selected.snippets, solutionLanguage)}</pre></div> : <div className="notice compact"><AlertCircle size={16}/>No starter template is available in this language.</div>}</>}
         {(!selected.solutions || Object.keys(selected.solutions).length === 0) && (!selected.snippets || Object.keys(selected.snippets).length === 0) && <div className="notice compact"><AlertCircle size={16}/>No solution code was included in this catalog record. Use the practice editor above to write and run your own solution.</div>}
       </div></div>
     </section></div>}
