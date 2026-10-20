@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Search, SlidersHorizontal, Bookmark, CheckCircle2, ExternalLink, Heart, X, Sun, Moon, Database, Code2, ChevronRight, Sparkles, RefreshCw, Download, AlertCircle, Tag, Clock3, SearchX, ArrowUp, Mail } from 'lucide-react'
 import './style.css'
@@ -136,6 +136,23 @@ function getStarterCode(problem, language) {
   return typeof snippet === 'string' ? snippet : snippet?.code || LANGUAGES[language].starter
 }
 
+function getLanguageCode(value) {
+  const normalized = String(value || '').toLowerCase()
+  if (normalized.includes('python')) return 'python'
+  if (normalized.includes('javascript') || normalized === 'js') return 'javascript'
+  if (normalized.includes('c++') || normalized === 'cpp') return 'cpp'
+  if (normalized.includes('java')) return 'java'
+  return normalized
+}
+
+function getSolutionForLanguage(solutions, language) {
+  if (!solutions || typeof solutions !== 'object') return null
+  const entry = Object.entries(solutions).find(([key]) => getLanguageCode(key) === language)
+  if (!entry) return null
+  const solution = entry[1]
+  return typeof solution === 'string' ? solution : solution?.code || JSON.stringify(solution, null, 2)
+}
+
 function formatExecutionResult(result) {
   if (result.compile_output) return `Compile error:\n${result.compile_output}`
   if (result.stderr) return `Error:\n${result.stderr}`
@@ -143,7 +160,7 @@ function formatExecutionResult(result) {
   return result.status?.description || 'The program finished without output.'
 }
 
-function CodeRunner({ problem = null }) {
+function CodeRunner({ problem = null, onLanguageChange }) {
   const [language, setLanguage] = useState('python')
   const [code, setCode] = useState(() => getStarterCode(problem, 'python'))
   const [input, setInput] = useState('')
@@ -152,6 +169,7 @@ function CodeRunner({ problem = null }) {
 
   const changeLanguage = value => {
     setLanguage(value)
+    onLanguageChange?.(value)
     setCode(getStarterCode(problem, value))
     setOutput('')
   }
@@ -208,20 +226,35 @@ function App() {
   const [dark, setDark] = useState(() => getStoredValue('aa-theme', 'dark') !== 'light')
   const [showFilters, setShowFilters] = useState(false)
   const [showBackToTop, setShowBackToTop] = useState(false)
+  const [scrollProgress, setScrollProgress] = useState(0)
   const [requestType, setRequestType] = useState('Feature request')
   const [requestName, setRequestName] = useState('')
   const [requestEmail, setRequestEmail] = useState('')
   const [requestMessage, setRequestMessage] = useState('')
   const [requestStatus, setRequestStatus] = useState('')
+  const modalRef = useRef(null)
+  const [solutionLanguage, setSolutionLanguage] = useState('python')
 
   useEffect(() => { setStoredValue('aa-solved', JSON.stringify(solved)) }, [solved])
   useEffect(() => { setStoredValue('aa-bookmarks', JSON.stringify(bookmarks)) }, [bookmarks])
   useEffect(() => { setStoredValue('aa-theme', dark ? 'dark' : 'light') }, [dark])
   useEffect(() => {
-    const handleScroll = () => setShowBackToTop(window.scrollY > 400)
+    let frame = 0
+    const handleScroll = () => {
+      if (frame) return
+      frame = window.requestAnimationFrame(() => {
+        const scrollable = document.documentElement.scrollHeight - window.innerHeight
+        setScrollProgress(scrollable > 0 ? Math.min(100, Math.round(window.scrollY / scrollable * 100)) : 0)
+        setShowBackToTop(window.scrollY > 400)
+        frame = 0
+      })
+    }
     window.addEventListener('scroll', handleScroll, { passive: true })
     handleScroll()
-    return () => window.removeEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (frame) window.cancelAnimationFrame(frame)
+    }
   }, [])
   useEffect(() => {
     const handleHashChange = () => setPage(window.location.hash === '#dashboard' ? 'dashboard' : window.location.hash === '#developer' ? 'developer' : window.location.hash === '#request' ? 'request' : 'home')
@@ -233,10 +266,19 @@ function App() {
   }, [page])
   useEffect(() => {
     if (!selected) return undefined
+    if (modalRef.current) modalRef.current.scrollTop = 0
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
     const handleKeyDown = event => event.key === 'Escape' && setSelected(null)
     window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = previousOverflow
+    }
   }, [selected])
+  useEffect(() => {
+    setSolutionLanguage('python')
+  }, [selected?.id])
 
   async function loadCatalog() {
     setLoading(true); setError('')
@@ -332,6 +374,7 @@ function App() {
   }
 
   return <div className={dark ? 'app dark' : 'app light'}>
+    <div className="scroll-progress" style={{ '--scroll-progress': `${scrollProgress}%` }} role="progressbar" aria-label="Page scroll progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow={scrollProgress} />
     <header className="topbar">
       <a className="brand" href="#"><span className="brand-mark">&gt;_</span><span>LEET<span className="brand-accent">UNLOCK</span><small>THE CODING WORKSPACE</small></span></a>
         <nav><a className={page === 'home' ? 'nav-active' : ''} href="#home">Home</a><a className={page === 'dashboard' ? 'nav-active' : ''} href="#dashboard">EDU</a><a className={page === 'developer' ? 'nav-active' : ''} href="#developer">Developer</a><a className={page === 'request' ? 'nav-active' : ''} href="#request">Request</a><a href="https://leetcode.com/problemset/" target="_blank" rel="noreferrer">LeetCode <ExternalLink size={13}/></a><a className="sponsor-link" href="https://github.com/sponsors/amitpatle" target="_blank" rel="noreferrer"><Heart size={13}/> Sponsor</a></nav>
@@ -435,22 +478,20 @@ function App() {
         </div>
       </section>}
     </main>
-    {selected && <div className="modal-backdrop" onClick={() => setSelected(null)}><section className="detail-modal" onClick={e => e.stopPropagation()}>
-      <div className="modal-top"><span className="eyebrow">PROBLEM DETAIL / #{selected.id}</span><button className="icon-button" onClick={() => setSelected(null)}><X size={18}/></button></div>
-      <h2>{selected.title}</h2><div className="modal-meta"><span className={`difficulty diff-${selected.difficulty.toLowerCase()}`}>{selected.difficulty}</span>{selected.premium && <span className="topic-chip">Premium</span>}{(selected.topics || []).map(t => <span className="topic-chip" key={t}>{t}</span>)}</div>
+    {selected && <div className="modal-backdrop" onClick={() => setSelected(null)}><section ref={modalRef} className="detail-modal" role="dialog" aria-modal="true" aria-labelledby="problem-title" onClick={e => e.stopPropagation()}>
+      <div className="modal-header"><div className="modal-top"><span className="eyebrow">PROBLEM DETAIL / #{selected.id}</span><button className="icon-button" aria-label="Close problem details" onClick={() => setSelected(null)}><X size={18}/></button></div>
+      <h2 id="problem-title">{selected.title}</h2><div className="modal-meta"><span className={`difficulty diff-${selected.difficulty.toLowerCase()}`}>{selected.difficulty}</span>{selected.premium && <span className="topic-chip">Premium</span>}{(selected.topics || []).map(t => <span className="topic-chip" key={t}>{t}</span>)}</div></div>
       <div className="modal-actions"><button className={solved.includes(String(selected.id)) ? 'primary-button done-button' : 'primary-button'} onClick={() => toggle(solved, setSolved, selected.id)}><CheckCircle2 size={16}/>{solved.includes(String(selected.id)) ? 'Solved' : 'Mark as solved'}</button><button className="secondary-button" onClick={() => toggle(bookmarks, setBookmarks, selected.id)}><Bookmark size={16}/>{bookmarks.includes(String(selected.id)) ? 'Bookmarked' : 'Bookmark'}</button><a className="secondary-button" href={selected.url} target="_blank" rel="noreferrer">Open on LeetCode <ExternalLink size={14}/></a></div>
-      <div className="detail-content">
-        <h3>Practice your solution</h3>
-        <CodeRunner problem={selected} />
+      <div className="detail-layout"><aside className="modal-practice"><h3>Practice your solution</h3><CodeRunner problem={selected} onLanguageChange={setSolutionLanguage} /></aside><div className="detail-content">
         {selected.summary && <><h3>How to think</h3><p>{selected.summary}</p></>}
         {selected.description ? <><h3>Problem statement</h3><div className="statement" dangerouslySetInnerHTML={{__html: String(selected.description).startsWith('<') ? selected.description : String(selected.description).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replace(/\r?\n/g, '<br/>')}} /></> : <div className="notice compact"><AlertCircle size={16}/>Full statement isn't included in this metadata record. Open the canonical problem page for the full prompt.</div>}
         {selected.examples?.length > 0 && <><h3>Examples</h3>{selected.examples.map((ex, i) => <pre className="example" key={i}>{formatExample(ex)}</pre>)}</>}
         {selected.constraints?.length > 0 && <><h3>Constraints</h3><ul>{selected.constraints.map((c, i) => <li key={i}>{typeof c === 'string' ? c : JSON.stringify(c)}</li>)}</ul></>}
         {selected.hints?.length > 0 && <><h3>Hints</h3><ol>{selected.hints.map((h, i) => <li key={i}>{typeof h === 'string' ? h : JSON.stringify(h)}</li>)}</ol></>}
-        {selected.solutions && typeof selected.solutions === 'object' && Object.keys(selected.solutions).length > 0 && <><h3>Curated solutions</h3>{Object.entries(selected.solutions).map(([lang, solution]) => <div key={lang} className="code-block"><div className="code-title"><Code2 size={14}/>{lang}</div><pre>{typeof solution === 'string' ? solution : solution?.code || JSON.stringify(solution, null, 2)}</pre></div>)}</>}
-        {(!selected.solutions || Object.keys(selected.solutions).length === 0) && selected.snippets && Object.keys(selected.snippets).length > 0 && <><h3>Available solution code</h3>{Object.entries(selected.snippets).slice(0, 3).map(([lang, code]) => <div key={lang} className="code-block"><div className="code-title"><Code2 size={14}/>{lang}</div><pre>{typeof code === 'string' ? code : code?.code || JSON.stringify(code, null, 2)}</pre></div>)}</>}
+        {selected.solutions && typeof selected.solutions === 'object' && Object.keys(selected.solutions).length > 0 && <><h3>Curated solution · {LANGUAGES[solutionLanguage].label}</h3>{getSolutionForLanguage(selected.solutions, solutionLanguage) ? <div className="code-block"><div className="code-title"><Code2 size={14}/>{LANGUAGES[solutionLanguage].label}</div><pre>{getSolutionForLanguage(selected.solutions, solutionLanguage)}</pre></div> : <div className="notice compact"><AlertCircle size={16}/>No curated solution is available in {LANGUAGES[solutionLanguage].label}. Choose another language above.</div>}</>}
+        {(!selected.solutions || Object.keys(selected.solutions).length === 0) && selected.snippets && Object.keys(selected.snippets).length > 0 && <><h3>Available solution · {LANGUAGES[solutionLanguage].label}</h3>{getSolutionForLanguage(selected.snippets, solutionLanguage) ? <div className="code-block"><div className="code-title"><Code2 size={14}/>{LANGUAGES[solutionLanguage].label}</div><pre>{getSolutionForLanguage(selected.snippets, solutionLanguage)}</pre></div> : <div className="notice compact"><AlertCircle size={16}/>No solution code is available in {LANGUAGES[solutionLanguage].label}. Choose another language above.</div>}</>}
         {(!selected.solutions || Object.keys(selected.solutions).length === 0) && (!selected.snippets || Object.keys(selected.snippets).length === 0) && <div className="notice compact"><AlertCircle size={16}/>No solution code was included in this catalog record. Use the practice editor above to write and run your own solution.</div>}
-      </div>
+      </div></div>
     </section></div>}
     <footer className="site-footer">
       <div className="footer-brand"><span>&gt;_ LEETUNLOCK</span><small>Built for learning, not shortcuts.</small></div>
