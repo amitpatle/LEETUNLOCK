@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Search, SlidersHorizontal, Bookmark, CheckCircle2, ExternalLink, Heart, X, Sun, Moon, Database, Code2, ChevronRight, Sparkles, RefreshCw, Download, AlertCircle, Tag, Clock3, SearchX, ArrowUp, Mail } from 'lucide-react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import './style.css'
 
 const REMOTE_DATA = 'https://raw.githubusercontent.com/mcaupybugs/leetcode-problems-db/master/merged_problems.json'
@@ -525,6 +526,7 @@ function App() {
       <small>Problem content belongs to its respective owners.</small>
     </footer>
     {showBackToTop && <button className="back-to-top" aria-label="Back to top" title="Back to top" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}><ArrowUp size={18}/></button>}
+    <SpeedInsights />
   </div>
 }
 createRoot(document.getElementById('root')).render(<App />)
