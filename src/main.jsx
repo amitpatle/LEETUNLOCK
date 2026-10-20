@@ -292,7 +292,12 @@ function App() {
         {selected.snippets && Object.keys(selected.snippets).length > 0 && <><h3>Starter code</h3>{Object.entries(selected.snippets).slice(0, 3).map(([lang, code]) => <div key={lang} className="code-block"><div className="code-title"><Code2 size={14}/>{lang}</div><pre>{typeof code === 'string' ? code : JSON.stringify(code, null, 2)}</pre></div>)}</>}
       </div>
     </section></div>}
-    <footer className="site-footer"><span>&gt;_ LEETUNLOCK</span><span>Built for learning, not shortcuts.</span><span>Problem content belongs to its respective owners.</span></footer>
+    <footer className="site-footer">
+      <div className="footer-brand"><span>&gt;_ LEETUNLOCK</span><small>Built for learning, not shortcuts.</small></div>
+      <div className="footer-about"><strong>About me</strong><span>Built by Amit Patle — developer and coding educator.</span><a href="https://github.com/amitpatle" target="_blank" rel="noreferrer">GitHub profile <ExternalLink size={12}/></a></div>
+      <div className="footer-open-source"><strong>Open source</strong><span>Improve the workspace, share ideas, and help make interview prep more accessible.</span><a href="https://github.com/amitpatle/LEETUNLOCK" target="_blank" rel="noreferrer">View repository <ExternalLink size={12}/></a></div>
+      <small>Problem content belongs to its respective owners.</small>
+    </footer>
   </div>
 }
 createRoot(document.getElementById('root')).render(<App />)
