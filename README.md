@@ -2,15 +2,11 @@
 
 A responsive React/Vite problem catalog with search, difficulty/topic filters, solved/bookmark tracking, dark/light mode, problem detail panels, local progress persistence, and JSON export.
 
-## Preview
-
-![LeetUnlock coding workspace](./docs/leetunlock-home.png)
-
 LeetUnlock is a monochrome coding workspace for exploring problems, tracking progress, and opening canonical LeetCode statements.
 
-## Start it
+## Run locally
 
-Requires Node.js 18+.
+Requires Node.js 18 or newer.
 
 ```bash
 npm install
@@ -19,28 +15,51 @@ npm run dev
 
 Open the local URL printed by Vite.
 
+To create a production build:
+
+```bash
+npm run build
+npm run preview
+```
+
+## Import the catalog
+
+The repository includes a catalog snapshot at `public/data/problems.json`, so the app works offline after installation. To fetch the latest catalog from the configured public source:
+
+```bash
+npm run import:catalog
+```
+
+The import script validates the response and writes the snapshot only when a recognizable problem list is returned. If the source is unavailable or changes format, it exits with an error.
+
 ## Catalog data
 
 - `public/data/curated-problems.json` contains 80 curated LeetUnlock learning records.
 - On startup, the app first checks `public/data/problems.json`, then attempts to load the public dataset at:
   `https://raw.githubusercontent.com/mcaupybugs/leetcode-problems-db/master/merged_problems.json`
-- The public dataset README describes a dataset of 2,913 free problems with fields including title, ID, difficulty, topics, description, examples, constraints, hints, starter snippets, and some editorial content. The actual remote count may change. This is **not a verified 3,600-record snapshot**.
-- To download the current source dataset into the project for offline use, run:
-  ```bash
-  npm run import:catalog
-  ```
-  If the source blocks access or changes format, the script prints an error rather than fabricating data.
-- If the online catalog is unavailable, the app still displays the curated records bundled with the project.
+- The bundled snapshot currently contains 2,913 records. The remote count may change when the catalog is refreshed.
+- If both catalog sources are unavailable, the app still displays the curated records bundled with the project.
 
 ## Features
 
-- Fuzzy-ish text search across titles, IDs, slugs, tags and descriptions
+- Text search across titles, IDs, slugs, tags and descriptions
 - Difficulty, topic, solved/bookmarked and free/premium filters
 - Per-device solved and bookmark persistence using localStorage
 - Progress export to JSON
 - Responsive layout and dark/light themes
 - Problem details, canonical LeetCode links, statement, examples, constraints, hints and starter snippets when the source provides them
 - Curated learning content merged by problem ID when available
+
+## Project structure
+
+```text
+src/main.jsx                 React application and catalog logic
+src/style.css                Application styles and responsive layout
+public/data/problems.json    Offline catalog snapshot
+public/data/curated-problems.json
+                             Curated learning records
+scripts/import-catalog.mjs   Catalog import and validation script
+```
 
 ## Data note
 
