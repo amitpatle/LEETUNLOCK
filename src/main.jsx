@@ -8,16 +8,32 @@ const CURATED_URL = '/data/curated-problems.json'
 const LOCAL_URL = '/data/problems.json'
 
 function normalizeTopics(value) {
-  if (Array.isArray(value)) return value.map(topic => typeof topic === 'string' ? topic : topic?.name).filter(Boolean)
+  if (Array.isArray(value)) return value.map(topic => typeof topic === 'string' ? topic : topic?.name).filter(Boolean).map(String)
   if (value && typeof value === 'object') {
-    return [value.primary, ...(Array.isArray(value.secondary) ? value.secondary : [])].filter(Boolean)
+    return [value.primary, ...(Array.isArray(value.secondary) ? value.secondary : [])].filter(Boolean).map(String)
   }
   return []
 }
 
+function getStoredValue(key, fallback = '') {
+  try {
+    return localStorage.getItem(key) ?? fallback
+  } catch {
+    return fallback
+  }
+}
+
+function setStoredValue(key, value) {
+  try {
+    localStorage.setItem(key, value)
+  } catch {
+    // Storage can be unavailable in private or restricted browser contexts.
+  }
+}
+
 function readStoredList(key) {
   try {
-    const value = JSON.parse(localStorage.getItem(key) || '[]')
+    const value = JSON.parse(getStoredValue(key, '[]'))
     return Array.isArray(value) ? value.map(String) : []
   } catch {
     return []
@@ -36,7 +52,7 @@ function formatExample(example) {
 }
 
 function normalize(p, i = 0) {
-  const slug = p.problem_slug ?? p.titleSlug ?? p.slug ?? p.titleSlug ?? ''
+  const slug = String(p.problem_slug ?? p.titleSlug ?? p.slug ?? '')
   const topics = normalizeTopics(p.topics ?? p.topicTags ?? p.tags)
   const id = String(p.frontend_id ?? p.frontendQuestionId ?? p.problem_id ?? p.id ?? i + 1)
   return {
@@ -67,12 +83,12 @@ function App() {
   const [selected, setSelected] = useState(null)
   const [solved, setSolved] = useState(() => readStoredList('aa-solved'))
   const [bookmarks, setBookmarks] = useState(() => readStoredList('aa-bookmarks'))
-  const [dark, setDark] = useState(() => localStorage.getItem('aa-theme') !== 'light')
+  const [dark, setDark] = useState(() => getStoredValue('aa-theme', 'dark') !== 'light')
   const [showFilters, setShowFilters] = useState(false)
 
-  useEffect(() => { localStorage.setItem('aa-solved', JSON.stringify(solved)) }, [solved])
-  useEffect(() => { localStorage.setItem('aa-bookmarks', JSON.stringify(bookmarks)) }, [bookmarks])
-  useEffect(() => { localStorage.setItem('aa-theme', dark ? 'dark' : 'light') }, [dark])
+  useEffect(() => { setStoredValue('aa-solved', JSON.stringify(solved)) }, [solved])
+  useEffect(() => { setStoredValue('aa-bookmarks', JSON.stringify(bookmarks)) }, [bookmarks])
+  useEffect(() => { setStoredValue('aa-theme', dark ? 'dark' : 'light') }, [dark])
 
   async function loadCatalog() {
     setLoading(true); setError('')
@@ -195,7 +211,7 @@ function App() {
       <div className="modal-actions"><button className={solved.includes(String(selected.id)) ? 'primary-button done-button' : 'primary-button'} onClick={() => toggle(solved, setSolved, selected.id)}><CheckCircle2 size={16}/>{solved.includes(String(selected.id)) ? 'Solved' : 'Mark as solved'}</button><button className="secondary-button" onClick={() => toggle(bookmarks, setBookmarks, selected.id)}><Bookmark size={16}/>{bookmarks.includes(String(selected.id)) ? 'Bookmarked' : 'Bookmark'}</button><a className="secondary-button" href={selected.url} target="_blank" rel="noreferrer">Open on LeetCode <ExternalLink size={14}/></a></div>
       <div className="detail-content">
         {selected.summary && <><h3>How to think</h3><p>{selected.summary}</p></>}
-        {selected.description ? <><h3>Problem statement</h3><div className="statement" dangerouslySetInnerHTML={{__html: String(selected.description).startsWith('<') ? selected.description : selected.description.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('\\n','<br/>')}} /></> : <div className="notice compact"><AlertCircle size={16}/>Full statement isn't included in this metadata record. Open the canonical problem page for the full prompt.</div>}
+        {selected.description ? <><h3>Problem statement</h3><div className="statement" dangerouslySetInnerHTML={{__html: String(selected.description).startsWith('<') ? selected.description : String(selected.description).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replace(/\r?\n/g, '<br/>')}} /></> : <div className="notice compact"><AlertCircle size={16}/>Full statement isn't included in this metadata record. Open the canonical problem page for the full prompt.</div>}
         {selected.examples?.length > 0 && <><h3>Examples</h3>{selected.examples.map((ex, i) => <pre className="example" key={i}>{formatExample(ex)}</pre>)}</>}
         {selected.constraints?.length > 0 && <><h3>Constraints</h3><ul>{selected.constraints.map((c, i) => <li key={i}>{typeof c === 'string' ? c : JSON.stringify(c)}</li>)}</ul></>}
         {selected.hints?.length > 0 && <><h3>Hints</h3><ol>{selected.hints.map((h, i) => <li key={i}>{typeof h === 'string' ? h : JSON.stringify(h)}</li>)}</ol></>}
