@@ -17,6 +17,48 @@ const DEVELOPER = {
   publicRepos: 39,
   followers: 29
 }
+const DSA_LIBRARY = [
+  {
+    topic: 'Complexity and problem solving',
+    learn: 'Learn Big-O by counting operations, then trace small examples by hand. For every solution, write its time and space complexity before optimizing it.',
+    resources: [['MIT 6.006 Introduction to Algorithms', 'https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/'], ['CS50x', 'https://cs50.harvard.edu/x/']]
+  },
+  {
+    topic: 'Arrays, strings, and hashing',
+    learn: 'Master indexing, frequency maps, prefix sums, two pointers, and sliding windows. Solve a simple version first, then identify the reusable pattern.',
+    resources: [['freeCodeCamp Algorithms', 'https://www.freecodecamp.org/learn/javascript-algorithms-and-data-structures-v8/'], ['VisuAlgo', 'https://visualgo.net/en']]
+  },
+  {
+    topic: 'Linked lists, stacks, and queues',
+    learn: 'Implement each structure from scratch. Practice pointer movement, fast and slow pointers, monotonic stacks, and breadth-first traversal.',
+    resources: [['OpenDSA interactive modules', 'https://opendsa-server.cs.vt.edu/'], ['Open Data Structures', 'https://opendatastructures.org/']]
+  },
+  {
+    topic: 'Sorting and searching',
+    learn: 'Implement selection, insertion, merge, and quick sort. Then practice binary search by defining the search range, condition, and loop invariant.',
+    resources: [['Khan Academy algorithms', 'https://www.khanacademy.org/computing/computer-science/algorithms'], ['VisuAlgo sorting', 'https://visualgo.net/en/sorting']]
+  },
+  {
+    topic: 'Trees and heaps',
+    learn: 'Learn recursive tree traversals before iterative versions. Add binary search trees, priority queues, tries, and lowest-common-ancestor problems.',
+    resources: [['OpenDSA trees', 'https://opendsa-server.cs.vt.edu/'], ['TheAlgorithms GitHub', 'https://github.com/TheAlgorithms']]
+  },
+  {
+    topic: 'Graphs',
+    learn: 'Represent graphs with adjacency lists, then master BFS, DFS, connected components, topological sorting, shortest paths, and union-find.',
+    resources: [['MIT 6.006 lectures', 'https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/'], ['VisuAlgo graph', 'https://visualgo.net/en/graphds']]
+  },
+  {
+    topic: 'Recursion and backtracking',
+    learn: 'Write the base case and state transition before coding. Practice subsets, permutations, combinations, grid search, and constraint pruning.',
+    resources: [['freeCodeCamp YouTube', 'https://www.youtube.com/@freecodecamp'], ['OpenDSA recursion', 'https://opendsa-server.cs.vt.edu/']]
+  },
+  {
+    topic: 'Greedy and dynamic programming',
+    learn: 'For greedy problems, prove why the local choice works. For DP, define state, transition, base cases, and iteration order before memoizing.',
+    resources: [['MIT 6.006 notes', 'https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/'], ['cp-algorithms', 'https://cp-algorithms.com/']]
+  }
+]
 const LANGUAGES = {
   python: { label: 'Python', id: 71, starter: '# Write your solution here\nprint("Hello, LeetUnlock!")' },
   javascript: { label: 'JavaScript', id: 63, starter: '// Write your solution here\nconsole.log("Hello, LeetUnlock!")' },
@@ -255,7 +297,7 @@ function App() {
   return <div className={dark ? 'app dark' : 'app light'}>
     <header className="topbar">
       <a className="brand" href="#"><span className="brand-mark">&gt;_</span><span>LEET<span className="brand-accent">UNLOCK</span><small>THE CODING WORKSPACE</small></span></a>
-        <nav><a className={page === 'home' ? 'nav-active' : ''} href="#home">Home</a><a className={page === 'dashboard' ? 'nav-active' : ''} href="#dashboard">Dashboard</a><a className={page === 'developer' ? 'nav-active' : ''} href="#developer">Developer</a><a href="https://leetcode.com/problemset/" target="_blank" rel="noreferrer">LeetCode <ExternalLink size={13}/></a><a className="sponsor-link" href="https://github.com/sponsors/amitpatle" target="_blank" rel="noreferrer"><Heart size={13}/> Sponsor</a></nav>
+        <nav><a className={page === 'home' ? 'nav-active' : ''} href="#home">Home</a><a className={page === 'dashboard' ? 'nav-active' : ''} href="#dashboard">EDU</a><a className={page === 'developer' ? 'nav-active' : ''} href="#developer">Developer</a><a href="https://leetcode.com/problemset/" target="_blank" rel="noreferrer">LeetCode <ExternalLink size={13}/></a><a className="sponsor-link" href="https://github.com/sponsors/amitpatle" target="_blank" rel="noreferrer"><Heart size={13}/> Sponsor</a></nav>
       <div className="top-actions"><button className="icon-button" title="Export progress" onClick={exportProgress}><Download size={17}/></button><button className="icon-button" title="Toggle theme" onClick={() => setDark(!dark)}>{dark ? <Sun size={17}/> : <Moon size={17}/>}</button></div>
     </header>
     <main>
@@ -263,7 +305,7 @@ function App() {
         <div className="hero-copy"><div className="eyebrow"><Sparkles size={13}/> YOUR INTERVIEW PREP WORKSPACE</div><h1>Unlock your next<br/><span>breakthrough.</span></h1><p>A focused command center for coding practice. Search by concept, filter by difficulty, and turn every problem into progress.</p><div className="hero-meta"><span><Database size={14}/>{loading ? 'Loading catalog…' : `${stats.total.toLocaleString()} problems indexed`}</span><span className="dot-sep">·</span><span>{curated.length} curated learning records</span></div></div>
         <div className="hero-art" aria-hidden="true"><img src="/leetunlock-preview.svg" alt="" /></div>
       </section>}
-      {page === 'dashboard' && <div className="dashboard-heading"><div className="eyebrow">YOUR WORKSPACE</div><h1>Practice with purpose.</h1><p>Track progress, run code, and learn from every problem in one place.</p></div>}
+      {page === 'dashboard' && <div className="dashboard-heading"><div className="eyebrow">EDU WORKSPACE</div><h1>Practice with purpose.</h1><p>Track progress, run code, and learn from every problem in one place.</p></div>}
       {page === 'developer' && <div className="dashboard-heading"><div className="eyebrow">THE BUILDER</div><h1>Open source by design.</h1><p>Meet the developer behind LeetUnlock and explore the project.</p></div>}
       {page === 'dashboard' && <section id="progress" className="stats-grid">
         <div className="stat-card"><span className="stat-label">TOTAL PROBLEMS</span><strong>{loading ? '—' : stats.total.toLocaleString()}</strong><small>Across all topics</small></div>
@@ -282,6 +324,15 @@ function App() {
           <article className="roadmap-card"><span className="roadmap-number">04</span><h3>Prepare with intention</h3><p>Mix timed practice with review. Explain your trade-offs, track weak topics, and repeat missed problems.</p><span className="roadmap-focus">MOCKS · REVIEW · CONSISTENCY</span></article>
         </div>
         <div className="study-rhythm"><strong>A simple daily rhythm</strong><span>10 min review</span><span>40 min focused solving</span><span>10 min write-up</span><span>1 revisit later</span></div>
+      </section>}
+      {page === 'dashboard' && <section className="library-section">
+        <div className="section-heading"><div><div className="eyebrow">THE LIBRARY</div><h2>DSA learning library</h2></div></div>
+        <p className="practice-intro">A free path from fundamentals to advanced interview patterns. Learn the idea, implement it, and solve a small set of focused problems.</p>
+        <div className="library-grid">{DSA_LIBRARY.map(item => <article className="library-card" key={item.topic}>
+          <h3>{item.topic}</h3>
+          <div><strong>How to learn it</strong><p>{item.learn}</p></div>
+          <div><strong>Where to learn it</strong><ul>{item.resources.map(([name, url]) => <li key={url}><a href={url} target="_blank" rel="noreferrer">{name} <ExternalLink size={11}/></a></li>)}</ul></div>
+        </article>)}</div>
       </section>}
       {page === 'home' && <section id="catalog" className="catalog-section">
         <div className="section-heading"><div><div className="eyebrow">THE LIBRARY</div><h2>Problem catalog <span className="count-pill">{visible.length.toLocaleString()}</span></h2></div><button className="filter-toggle" onClick={() => setShowFilters(!showFilters)}><SlidersHorizontal size={16}/> Filters <span>{[difficulty !== 'All', topic !== 'All', status !== 'All', premium !== 'All'].filter(Boolean).length}</span></button></div>

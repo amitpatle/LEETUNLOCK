@@ -53,7 +53,8 @@ The import script validates the response and writes the snapshot only when a rec
 - Progress export to JSON
 - In-browser practice editor with Python, JavaScript, C++ and Java execution through Judge0 CE
 - Responsive layout and dark/light themes
-- Home catalog and Dashboard pages for separating discovery from practice
+- Home catalog and EDU pages for separating discovery from practice
+- Dashboard DSA roadmap and a free learning library with open resources
 - Problem details, canonical LeetCode links, statement, examples, constraints, hints and starter snippets when the source provides them
 - Curated learning content merged by problem ID when available
 
@@ -76,6 +77,10 @@ The Practice section and problem details include a code editor for Python, JavaS
 ## Developer
 
 LeetUnlock is maintained by [A M i T](https://github.com/amitpatle), an open-source developer on GitHub. Their public profile bio is: “There is always one more bug to fix.” The profile currently lists 39 public repositories and 29 followers. Visit the [GitHub profile](https://github.com/amitpatle) or the [LEETUNLOCK repository](https://github.com/amitpatle/LEETUNLOCK).
+
+## Library
+
+The Dashboard includes a free DSA learning library covering complexity, arrays, strings, hashing, linked lists, stacks, queues, sorting, searching, trees, heaps, graphs, recursion, backtracking, greedy algorithms, and dynamic programming. Each topic includes a practical learning method and links to free resources such as [MIT OpenCourseWare](https://ocw.mit.edu/), [CS50](https://cs50.harvard.edu/x/), [freeCodeCamp](https://www.freecodecamp.org/learn/), [VisuAlgo](https://visualgo.net/en), [OpenDSA](https://opendsa-server.cs.vt.edu/), [Khan Academy](https://www.khanacademy.org/computing/computer-science/algorithms), and [cp-algorithms](https://cp-algorithms.com/).
 
 ## Data note
 
