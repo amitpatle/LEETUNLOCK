@@ -262,6 +262,17 @@ function App() {
         <div className="stat-card"><span className="stat-label">HARD</span><strong className="hard-text">{stats.hard.toLocaleString()}</strong><small>Master the edge</small></div>
         <div className="stat-card progress-stat"><span className="stat-label">YOUR PROGRESS</span><strong>{stats.done}<em> / {stats.total || '—'}</em></strong><div className="progress-track"><span style={{width: `${stats.total ? Math.min(100, stats.done / stats.total * 100) : 0}%`}}/></div><small>{stats.total ? Math.round(stats.done / stats.total * 100) : 0}% completed</small></div>
       </section>}
+      {page === 'dashboard' && <section className="dsa-roadmap">
+        <div className="section-heading"><div><div className="eyebrow">THE ROADMAP</div><h2>How to learn DSA</h2></div></div>
+        <p className="practice-intro">Learn one pattern at a time, solve deliberately, and revisit problems until the ideas become instinct.</p>
+        <div className="roadmap-grid">
+          <article className="roadmap-card"><span className="roadmap-number">01</span><h3>Build the foundations</h3><p>Start with complexity analysis, arrays, strings, linked lists, stacks, queues, and hash tables.</p><span className="roadmap-focus">BIG-O · DATA STRUCTURES</span></article>
+          <article className="roadmap-card"><span className="roadmap-number">02</span><h3>Master core patterns</h3><p>Practice two pointers, sliding window, prefix sums, binary search, sorting, and recursion.</p><span className="roadmap-focus">PATTERNS · PROBLEM SOLVING</span></article>
+          <article className="roadmap-card"><span className="roadmap-number">03</span><h3>Grow your toolkit</h3><p>Move to trees, heaps, graphs, backtracking, greedy algorithms, and dynamic programming.</p><span className="roadmap-focus">TREES · GRAPHS · DP</span></article>
+          <article className="roadmap-card"><span className="roadmap-number">04</span><h3>Prepare with intention</h3><p>Mix timed practice with review. Explain your trade-offs, track weak topics, and repeat missed problems.</p><span className="roadmap-focus">MOCKS · REVIEW · CONSISTENCY</span></article>
+        </div>
+        <div className="study-rhythm"><strong>A simple daily rhythm</strong><span>10 min review</span><span>40 min focused solving</span><span>10 min write-up</span><span>1 revisit later</span></div>
+      </section>}
       {page === 'home' && <section id="catalog" className="catalog-section">
         <div className="section-heading"><div><div className="eyebrow">THE LIBRARY</div><h2>Problem catalog <span className="count-pill">{visible.length.toLocaleString()}</span></h2></div><button className="filter-toggle" onClick={() => setShowFilters(!showFilters)}><SlidersHorizontal size={16}/> Filters <span>{[difficulty !== 'All', topic !== 'All', status !== 'All', premium !== 'All'].filter(Boolean).length}</span></button></div>
         <div className="search-row"><div className="search-box"><Search size={19}/><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search titles, IDs, topics, or concepts…" /><kbd>⌘ K</kbd>{query && <button className="clear-search" onClick={() => setQuery('')}><X size={15}/></button>}</div><button className="refresh-button" onClick={loadCatalog} title="Reload catalog"><RefreshCw size={17}/></button></div>
