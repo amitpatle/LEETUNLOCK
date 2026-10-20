@@ -53,6 +53,7 @@ The import script validates the response and writes the snapshot only when a rec
 - Progress export to JSON
 - In-browser practice editor with Python, JavaScript, C++ and Java execution through Judge0 CE
 - Responsive layout and dark/light themes
+- Home catalog and Dashboard pages for separating discovery from practice
 - Problem details, canonical LeetCode links, statement, examples, constraints, hints and starter snippets when the source provides them
 - Curated learning content merged by problem ID when available
 

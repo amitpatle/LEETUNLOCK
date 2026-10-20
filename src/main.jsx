@@ -136,6 +136,7 @@ function CodeRunner({ problem = null }) {
 }
 
 function App() {
+  const [page, setPage] = useState(() => window.location.hash === '#dashboard' ? 'dashboard' : window.location.hash === '#developer' ? 'developer' : 'home')
   const [problems, setProblems] = useState([])
   const [curated, setCurated] = useState([])
   const [loading, setLoading] = useState(true)
@@ -161,6 +162,11 @@ function App() {
     window.addEventListener('scroll', handleScroll, { passive: true })
     handleScroll()
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+  useEffect(() => {
+    const handleHashChange = () => setPage(window.location.hash === '#dashboard' ? 'dashboard' : window.location.hash === '#developer' ? 'developer' : 'home')
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
   }, [])
 
   async function loadCatalog() {
@@ -239,22 +245,24 @@ function App() {
   return <div className={dark ? 'app dark' : 'app light'}>
     <header className="topbar">
       <a className="brand" href="#"><span className="brand-mark">&gt;_</span><span>LEET<span className="brand-accent">UNLOCK</span><small>THE CODING WORKSPACE</small></span></a>
-      <nav><a className="nav-active" href="#catalog">Catalog</a><a href="#practice">Practice</a><a href="#progress">Progress</a><a href="https://leetcode.com/problemset/" target="_blank" rel="noreferrer">LeetCode <ExternalLink size={13}/></a><a className="sponsor-link" href="https://github.com/sponsors/amitpatle" target="_blank" rel="noreferrer"><Heart size={13}/> Sponsor</a></nav>
+        <nav><a className={page === 'home' ? 'nav-active' : ''} href="#home">Home</a><a className={page === 'dashboard' ? 'nav-active' : ''} href="#dashboard">Dashboard</a><a className={page === 'developer' ? 'nav-active' : ''} href="#developer">Developer</a><a href="https://leetcode.com/problemset/" target="_blank" rel="noreferrer">LeetCode <ExternalLink size={13}/></a><a className="sponsor-link" href="https://github.com/sponsors/amitpatle" target="_blank" rel="noreferrer"><Heart size={13}/> Sponsor</a></nav>
       <div className="top-actions"><button className="icon-button" title="Export progress" onClick={exportProgress}><Download size={17}/></button><button className="icon-button" title="Toggle theme" onClick={() => setDark(!dark)}>{dark ? <Sun size={17}/> : <Moon size={17}/>}</button></div>
     </header>
     <main>
-      <section className="hero">
+      {page === 'home' && <section className="hero">
         <div className="hero-copy"><div className="eyebrow"><Sparkles size={13}/> YOUR INTERVIEW PREP WORKSPACE</div><h1>Unlock your next<br/><span>breakthrough.</span></h1><p>A focused command center for coding practice. Search by concept, filter by difficulty, and turn every problem into progress.</p><div className="hero-meta"><span><Database size={14}/>{loading ? 'Loading catalog…' : `${stats.total.toLocaleString()} problems indexed`}</span><span className="dot-sep">·</span><span>{curated.length} curated learning records</span></div></div>
         <div className="hero-art" aria-hidden="true"><img src="/leetunlock-preview.svg" alt="" /></div>
-      </section>
-      <section id="progress" className="stats-grid">
+      </section>}
+      {page === 'dashboard' && <div className="dashboard-heading"><div className="eyebrow">YOUR WORKSPACE</div><h1>Practice with purpose.</h1><p>Track progress, run code, and learn from every problem in one place.</p></div>}
+      {page === 'developer' && <div className="dashboard-heading"><div className="eyebrow">THE BUILDER</div><h1>Open source by design.</h1><p>Meet the developer behind LeetUnlock and explore the project.</p></div>}
+      {page === 'dashboard' && <section id="progress" className="stats-grid">
         <div className="stat-card"><span className="stat-label">TOTAL PROBLEMS</span><strong>{loading ? '—' : stats.total.toLocaleString()}</strong><small>Across all topics</small></div>
         <div className="stat-card"><span className="stat-label">EASY</span><strong className="easy-text">{stats.easy.toLocaleString()}</strong><small>Build your base</small></div>
         <div className="stat-card"><span className="stat-label">MEDIUM</span><strong className="medium-text">{stats.medium.toLocaleString()}</strong><small>Sharpen patterns</small></div>
         <div className="stat-card"><span className="stat-label">HARD</span><strong className="hard-text">{stats.hard.toLocaleString()}</strong><small>Master the edge</small></div>
         <div className="stat-card progress-stat"><span className="stat-label">YOUR PROGRESS</span><strong>{stats.done}<em> / {stats.total || '—'}</em></strong><div className="progress-track"><span style={{width: `${stats.total ? Math.min(100, stats.done / stats.total * 100) : 0}%`}}/></div><small>{stats.total ? Math.round(stats.done / stats.total * 100) : 0}% completed</small></div>
-      </section>
-      <section id="catalog" className="catalog-section">
+      </section>}
+      {page === 'home' && <section id="catalog" className="catalog-section">
         <div className="section-heading"><div><div className="eyebrow">THE LIBRARY</div><h2>Problem catalog <span className="count-pill">{visible.length.toLocaleString()}</span></h2></div><button className="filter-toggle" onClick={() => setShowFilters(!showFilters)}><SlidersHorizontal size={16}/> Filters <span>{[difficulty !== 'All', topic !== 'All', status !== 'All', premium !== 'All'].filter(Boolean).length}</span></button></div>
         <div className="search-row"><div className="search-box"><Search size={19}/><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search titles, IDs, topics, or concepts…" /><kbd>⌘ K</kbd>{query && <button className="clear-search" onClick={() => setQuery('')}><X size={15}/></button>}</div><button className="refresh-button" onClick={loadCatalog} title="Reload catalog"><RefreshCw size={17}/></button></div>
         {showFilters && <div className="filters-panel">
@@ -276,12 +284,27 @@ function App() {
           </article>)}
         </div>}
         <div className="catalog-footer"><span>LEETUNLOCK / INDEX V1.0</span><span>Progress stored locally on this device</span></div>
-      </section>
-      <section id="practice" className="practice-section">
+      </section>}
+      {page === 'dashboard' && <section id="practice" className="practice-section">
         <div className="section-heading"><div><div className="eyebrow">THE PLAYGROUND</div><h2>Practice code</h2></div></div>
         <p className="practice-intro">Write and run Python, JavaScript, C++, or Java in your browser.</p>
         <CodeRunner />
-      </section>
+      </section>}
+      {page === 'developer' && <section id="developer" className="developer-section">
+        <div className="section-heading"><div><div className="eyebrow">THE BUILDER</div><h2>Developer</h2></div></div>
+        <div className="developer-card">
+          <div className="developer-avatar" aria-hidden="true">&gt;_</div>
+          <div className="developer-copy">
+            <span className="developer-role">OPEN SOURCE DEV</span>
+            <h3>Amit Patle</h3>
+            <p>Building open-source tools that make coding practice more focused, practical, and accessible.</p>
+            <div className="developer-links">
+              <a className="primary-button" href="https://github.com/amitpatle" target="_blank" rel="noreferrer">GitHub profile <ExternalLink size={14}/></a>
+              <a className="secondary-button" href="https://github.com/amitpatle/LEETUNLOCK" target="_blank" rel="noreferrer">LEETUNLOCK repository <ExternalLink size={14}/></a>
+            </div>
+          </div>
+        </div>
+      </section>}
     </main>
     {selected && <div className="modal-backdrop" onClick={() => setSelected(null)}><section className="detail-modal" onClick={e => e.stopPropagation()}>
       <div className="modal-top"><span className="eyebrow">PROBLEM DETAIL / #{selected.id}</span><button className="icon-button" onClick={() => setSelected(null)}><X size={18}/></button></div>
