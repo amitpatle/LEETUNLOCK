@@ -68,7 +68,7 @@ function normalize(p, i = 0) {
     topics,
     description: typeof (p.description ?? p.content) === 'string' ? (p.description ?? p.content) : '',
     examples: p.examples ?? [], constraints: p.constraints ?? [],
-    hints: p.hints ?? [], snippets: p.code_snippets ?? p.codeSnippets ?? {},
+    hints: p.hints ?? [], snippets: p.snippets ?? p.code_snippets ?? p.codeSnippets ?? {},
     premium: Boolean(p.paidOnly ?? p.isPaidOnly),
     url: p.url ?? (slug ? `https://leetcode.com/problems/${slug}/` : 'https://leetcode.com/problemset/')
   }
@@ -295,8 +295,9 @@ function App() {
         {selected.examples?.length > 0 && <><h3>Examples</h3>{selected.examples.map((ex, i) => <pre className="example" key={i}>{formatExample(ex)}</pre>)}</>}
         {selected.constraints?.length > 0 && <><h3>Constraints</h3><ul>{selected.constraints.map((c, i) => <li key={i}>{typeof c === 'string' ? c : JSON.stringify(c)}</li>)}</ul></>}
         {selected.hints?.length > 0 && <><h3>Hints</h3><ol>{selected.hints.map((h, i) => <li key={i}>{typeof h === 'string' ? h : JSON.stringify(h)}</li>)}</ol></>}
-        {selected.solutions && typeof selected.solutions === 'object' && <><h3>Curated solutions</h3>{Object.entries(selected.solutions).map(([lang, solution]) => <div key={lang} className="code-block"><div className="code-title"><Code2 size={14}/>{lang}</div><pre>{typeof solution === 'string' ? solution : solution?.code || JSON.stringify(solution, null, 2)}</pre></div>)}</>}
-        {selected.snippets && Object.keys(selected.snippets).length > 0 && <><h3>Starter code</h3>{Object.entries(selected.snippets).slice(0, 3).map(([lang, code]) => <div key={lang} className="code-block"><div className="code-title"><Code2 size={14}/>{lang}</div><pre>{typeof code === 'string' ? code : JSON.stringify(code, null, 2)}</pre></div>)}</>}
+        {selected.solutions && typeof selected.solutions === 'object' && Object.keys(selected.solutions).length > 0 && <><h3>Curated solutions</h3>{Object.entries(selected.solutions).map(([lang, solution]) => <div key={lang} className="code-block"><div className="code-title"><Code2 size={14}/>{lang}</div><pre>{typeof solution === 'string' ? solution : solution?.code || JSON.stringify(solution, null, 2)}</pre></div>)}</>}
+        {(!selected.solutions || Object.keys(selected.solutions).length === 0) && selected.snippets && Object.keys(selected.snippets).length > 0 && <><h3>Available solution code</h3>{Object.entries(selected.snippets).slice(0, 3).map(([lang, code]) => <div key={lang} className="code-block"><div className="code-title"><Code2 size={14}/>{lang}</div><pre>{typeof code === 'string' ? code : code?.code || JSON.stringify(code, null, 2)}</pre></div>)}</>}
+        {(!selected.solutions || Object.keys(selected.solutions).length === 0) && (!selected.snippets || Object.keys(selected.snippets).length === 0) && <div className="notice compact"><AlertCircle size={16}/>No solution code was included in this catalog record. Use the practice editor above to write and run your own solution.</div>}
       </div>
     </section></div>}
     <footer className="site-footer">

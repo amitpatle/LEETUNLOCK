@@ -32,13 +32,14 @@ The repository includes a catalog snapshot at `public/data/problems.json`, so th
 
 ```bash
 npm run import:catalog
+npm run curate:catalog
 ```
 
 The import script validates the response and writes the snapshot only when a recognizable problem list is returned. If the source is unavailable or changes format, it exits with an error.
 
 ## Catalog data
 
-- `public/data/curated-problems.json` contains 80 curated LeetUnlock learning records.
+- `public/data/curated-problems.json` contains a curated learning record for every bundled catalog problem. Existing enriched records are preserved, and generated records reuse the source statement, metadata, examples, hints, constraints, and code.
 - On startup, the app first checks `public/data/problems.json`, then attempts to load the public dataset at:
   `https://raw.githubusercontent.com/mcaupybugs/leetcode-problems-db/master/merged_problems.json`
 - The bundled snapshot currently contains 2,913 records. The remote count may change when the catalog is refreshed.
@@ -64,6 +65,7 @@ public/data/problems.json    Offline catalog snapshot
 public/data/curated-problems.json
                              Curated learning records
 scripts/import-catalog.mjs   Catalog import and validation script
+scripts/build-curated.mjs    Generate records for all catalog problems
 ```
 
 ## Code execution
