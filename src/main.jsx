@@ -200,6 +200,7 @@ function App() {
   const [status, setStatus] = useState('All')
   const [premium, setPremium] = useState('All')
   const [selected, setSelected] = useState(null)
+  const [catalogPage, setCatalogPage] = useState(1)
   const [solved, setSolved] = useState(() => readStoredList('aa-solved'))
   const [bookmarks, setBookmarks] = useState(() => readStoredList('aa-bookmarks'))
   const [dark, setDark] = useState(() => getStoredValue('aa-theme', 'dark') !== 'light')
@@ -279,6 +280,24 @@ function App() {
         (premium === 'All' || (premium === 'Free' ? !p.premium : p.premium))
     })
   }, [all, query, difficulty, topic, status, premium, solved, bookmarks])
+  const pageSize = 10
+  const pageCount = Math.max(1, Math.ceil(visible.length / pageSize))
+  const paginated = useMemo(() => visible.slice((catalogPage - 1) * pageSize, catalogPage * pageSize), [visible, catalogPage])
+  const pageNumbers = useMemo(() => {
+    if (pageCount <= 7) return Array.from({ length: pageCount }, (_, index) => index + 1)
+    const numbers = new Set([1, pageCount, catalogPage - 1, catalogPage, catalogPage + 1])
+    return [...numbers].filter(number => number > 0 && number <= pageCount).sort((a, b) => a - b).reduce((items, number, index, values) => {
+      if (index > 0 && number - values[index - 1] > 1) items.push(`ellipsis-${number}`)
+      items.push(number)
+      return items
+    }, [])
+  }, [pageCount, catalogPage])
+  useEffect(() => {
+    setCatalogPage(current => Math.min(current, pageCount))
+  }, [pageCount])
+  useEffect(() => {
+    setCatalogPage(1)
+  }, [query, difficulty, topic, status, premium])
 
   const stats = useMemo(() => ({
     total: all.length,
@@ -348,12 +367,17 @@ function App() {
         {source === 'remote' && <div className="source-note"><span className="source-dot"></span> Catalog loaded from public dataset · curated content is merged when IDs match</div>}
         {loading ? <div className="loading-state"><div className="spinner"></div><p>Mapping the problem universe…</p></div> : visible.length === 0 ? <div className="empty-state"><SearchX size={32}/><h3>No problems found</h3><p>Try a different search or clear your filters.</p><button className="secondary-button" onClick={clearFilters}>Reset filters</button></div> : <div className="problem-list">
           <div className="list-header"><span>PROBLEM</span><span>TOPICS</span><span>DIFFICULTY</span><span>STATUS</span></div>
-          {visible.map(p => <article className="problem-row" key={`${p.id}-${p.slug}`} onClick={() => setSelected(p)} tabIndex={0} onKeyDown={e => e.key === 'Enter' && setSelected(p)}>
+          {paginated.map(p => <article className="problem-row" key={`${p.id}-${p.slug}`} onClick={() => setSelected(p)} tabIndex={0} onKeyDown={e => e.key === 'Enter' && setSelected(p)}>
             <div className="problem-main"><span className="problem-id">{p.id.padStart ? `#${p.id}` : p.id}</span><div className="problem-name"><strong>{p.title}</strong><small>{p.premium ? 'PREMIUM' : p.hasCurated || curatedById.has(String(p.id)) ? 'CURATED NOTES AVAILABLE' : p.slug || 'PROBLEM'}</small></div></div>
             <div className="topic-list">{(p.topics || []).slice(0, 2).map(t => <span className="topic-chip" key={t}>{t}</span>)}{(p.topics || []).length > 2 && <span className="topic-more">+{p.topics.length - 2}</span>}</div>
             <div><span className={`difficulty diff-${p.difficulty.toLowerCase()}`}>{p.difficulty}</span></div>
             <div className="row-status"><button title={solved.includes(String(p.id)) ? 'Mark unsolved' : 'Mark solved'} className={`row-action ${solved.includes(String(p.id)) ? 'is-done' : ''}`} onClick={e => { e.stopPropagation(); toggle(solved, setSolved, p.id) }}><CheckCircle2 size={17}/></button><button title={bookmarks.includes(String(p.id)) ? 'Remove bookmark' : 'Bookmark'} className={`row-action ${bookmarks.includes(String(p.id)) ? 'is-bookmarked' : ''}`} onClick={e => { e.stopPropagation(); toggle(bookmarks, setBookmarks, p.id) }}><Bookmark size={16}/></button><ChevronRight size={16} className="row-chevron"/></div>
           </article>)}
+          <div className="pagination" aria-label="Catalog pagination">
+            <button className="pagination-button" disabled={catalogPage === 1} onClick={() => setCatalogPage(current => current - 1)}>Previous</button>
+            <div className="page-number-list">{pageNumbers.map(number => typeof number === 'string' ? <span className="pagination-ellipsis" key={number}>…</span> : <button key={number} className={`pagination-button page-number ${catalogPage === number ? 'is-current' : ''}`} aria-label={`Page ${number}`} aria-current={catalogPage === number ? 'page' : undefined} onClick={() => setCatalogPage(number)}>{number}</button>)}</div>
+            <button className="pagination-button" disabled={catalogPage === pageCount} onClick={() => setCatalogPage(current => current + 1)}>Next</button>
+          </div>
         </div>}
         <div className="catalog-footer"><span>LEETUNLOCK / INDEX V1.0</span><span>Progress stored locally on this device</span></div>
       </section>}
