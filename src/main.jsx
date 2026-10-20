@@ -172,7 +172,7 @@ function App() {
     <main>
       <section className="hero">
         <div className="hero-copy"><div className="eyebrow"><Sparkles size={13}/> YOUR INTERVIEW PREP WORKSPACE</div><h1>Unlock your next<br/><span>breakthrough.</span></h1><p>A focused command center for coding practice. Search by concept, filter by difficulty, and turn every problem into progress.</p><div className="hero-meta"><span><Database size={14}/>{loading ? 'Loading catalog…' : `${stats.total.toLocaleString()} problems indexed`}</span><span className="dot-sep">·</span><span>{curated.length} curated learning records</span></div></div>
-        <div className="hero-art" aria-hidden="true"><div className="orbit orbit-one"></div><div className="orbit orbit-two"></div><div className="orbit orbit-three"></div><div className="planet"><span>⌘</span></div><div className="floating-chip chip-a">O(log n)</div><div className="floating-chip chip-b">DP / GRAPH</div><div className="floating-chip chip-c">010101</div><div className="star star-a">✳</div><div className="star star-b">✦</div></div>
+        <div className="hero-art" aria-hidden="true"><img src="/leetunlock-preview.svg" alt="" /></div>
       </section>
       <section id="progress" className="stats-grid">
         <div className="stat-card"><span className="stat-label">TOTAL PROBLEMS</span><strong>{loading ? '—' : stats.total.toLocaleString()}</strong><small>Across all topics</small></div>

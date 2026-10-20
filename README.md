@@ -4,6 +4,10 @@ A responsive React/Vite problem catalog with search, difficulty/topic filters, s
 
 LeetUnlock is a monochrome coding workspace for exploring problems, tracking progress, and opening canonical LeetCode statements.
 
+## Preview
+
+![LeetUnlock coding workspace](./public/leetunlock-preview.svg)
+
 ## Run locally
 
 Requires Node.js 18 or newer.
